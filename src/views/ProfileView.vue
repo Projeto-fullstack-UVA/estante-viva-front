@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
-import { loanService, reservationService, userService } from '@/services'
+import { loanService, reservationService, userService, donationRequestService } from '@/services'
 import { formatDate, formatPoints, getStatusLabel } from '@/utils'
-import type { Loan, Reservation } from '@/types'
+import type { Loan, Reservation, DonationRequest } from '@/types'
 
-const { user } = useAuth()
+const router = useRouter()
+const { user, refreshUser } = useAuth()
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 const loans = ref<Loan[]>([])
 const activeLoans = ref<Loan[]>([])
 const returnedLoans = ref<Loan[]>([])
 const reservations = ref<Reservation[]>([])
+const donationRequests = ref<DonationRequest[]>([])
 const showPasswordModal = ref(false)
 const passwordForm = ref({ current: '', next: '', confirm: '' })
 const passwordErrors = ref<Record<string, string>>({})
@@ -24,14 +27,17 @@ const loadUserData = async () => {
   try {
     isLoading.value = true
     error.value = null
-    const [userLoans, userReservations] = await Promise.all([
+    await refreshUser()
+    const [userLoans, userReservations, userDonationRequests] = await Promise.all([
       loanService.getUserLoans(user.value.id),
       reservationService.getUserReservations(user.value.id),
+      donationRequestService.getUserDonationRequests(user.value.id),
     ])
     loans.value = userLoans
     activeLoans.value = userLoans.filter((l) => !l.returned_at)
     returnedLoans.value = userLoans.filter((l) => !!l.returned_at)
     reservations.value = userReservations
+    donationRequests.value = userDonationRequests
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao carregar dados'
   } finally {
@@ -123,6 +129,13 @@ const roleLabel: Record<string, string> = {
   admin: 'Administrador',
 }
 
+const donationStatusLabel: Record<string, string> = {
+  pending: 'Pendente',
+  scheduled: 'Agendado',
+  rejected: 'Rejeitado',
+  completed: 'Concluído',
+}
+
 onMounted(() => {
   loadUserData()
 })
@@ -138,10 +151,13 @@ onMounted(() => {
       <div class="profile-hero-info">
         <h2>{{ user?.name ?? 'Usuário' }}</h2>
         <p>{{ user?.email }} &bull; {{ roleLabel[user?.role ?? ''] ?? user?.role }}</p>
-        <p>{{ user?.institution }}</p>
+        <p>{{ user?.campus }}</p>
       </div>
       <div class="profile-hero-actions">
-        <button type="button" class="btn" style="background: rgba(255,255,255,.2); border: 1.5px solid rgba(255,255,255,.4); color: #fff;" @click="openPasswordModal">
+        <button type="button" class="btn" @click="router.push('/donate')">
+          Doar Livro
+        </button>
+        <button type="button" class="btn secondary" @click="openPasswordModal">
           Alterar senha
         </button>
       </div>
@@ -177,8 +193,8 @@ onMounted(() => {
       </div>
       <div class="info-grid">
         <div class="info-item">
-          <span class="info-label">Instituição</span>
-          <span class="info-value">{{ user?.institution ?? '—' }}</span>
+          <span class="info-label">Campus</span>
+          <span class="info-value">{{ user?.campus ?? '—' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Perfil</span>
@@ -250,7 +266,7 @@ onMounted(() => {
     </div>
 
     <!-- Histórico -->
-    <div v-if="returnedLoans.length > 0" class="card">
+    <div v-if="returnedLoans.length > 0" class="card" style="margin-bottom: 1.25rem;">
       <div class="card-header">
         <div>
           <div class="card-title">Histórico de Empréstimos</div>
@@ -272,6 +288,50 @@ onMounted(() => {
               <td>{{ loan.book_title }}</td>
               <td>{{ loan.book_author }}</td>
               <td>{{ formatDate(loan.returned_at!) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div v-if="donationRequests.length > 0" class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Solicitações de Doação</div>
+          <div class="card-subtitle">Acompanhe o agendamento, avaliação e créditos</div>
+        </div>
+        <span class="badge badge-green">{{ donationRequests.length }}</span>
+      </div>
+      <div class="table-shell">
+        <table class="table-view">
+          <thead>
+            <tr>
+              <th>Livro</th>
+              <th>Status</th>
+              <th>Agendado para</th>
+              <th>Créditos</th>
+              <th>Atualizado em</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="request in donationRequests" :key="request.id">
+              <td>
+                <strong>{{ request.title }}</strong>
+                <div style="font-size: 0.85rem; color: var(--gray-500);">{{ request.author }}</div>
+              </td>
+              <td>
+                <span class="badge" :class="request.status === 'completed' ? 'badge-green' : request.status === 'rejected' ? 'badge-red' : 'badge-gray'">
+                  {{ donationStatusLabel[request.status] }}
+                </span>
+              </td>
+              <td>{{ formatDate(request.scheduled_at) }}</td>
+              <td>
+                <span v-if="request.status === 'completed' && request.assessed_points !== null" style="color: var(--green-600); font-weight: 600;">
+                  +{{ request.assessed_points }} pontos
+                </span>
+                <span v-else>—</span>
+              </td>
+              <td>{{ formatDate(request.updated_at) }}</td>
             </tr>
           </tbody>
         </table>

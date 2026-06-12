@@ -107,16 +107,18 @@ button, input, select, textarea { font: inherit; }
   flex-shrink: 0;
 }
 
-.brand-icon {
+.brand-logo {
   width: 32px;
   height: 32px;
-  background: var(--green-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: var(--radius-sm);
-  display: grid;
-  place-items: center;
-  color: var(--white);
-  font-size: 1rem;
-  font-weight: 800;
+}
+
+.brand-logo svg {
+  width: 100%;
+  height: 100%;
 }
 
 .brand-dot { color: var(--green-600); }
@@ -420,16 +422,18 @@ button.small:not(.btn) {
   z-index: 1;
 }
 
-.auth-side-logo-icon {
-  width: 44px;
-  height: 44px;
-  background: rgba(255,255,255,.2);
-  border-radius: var(--radius-sm);
-  display: grid;
-  place-items: center;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--white);
+.auth-side-logo-img {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-side-logo-img svg {
+  width: 100%;
+  height: 100%;
+  color: white !important;
 }
 
 .auth-side-logo-text {

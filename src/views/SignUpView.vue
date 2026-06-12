@@ -1,20 +1,35 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/services/api'
+import { statsService } from '@/services'
 import { validateEmail } from '@/utils'
+import Logo from '@/components/common/Logo.vue'
 
 const router = useRouter()
+const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
 
 const email = ref('')
 const name = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
-const institution = ref('')
+const campus = ref<(typeof campusOptions)[number] | ''>('')
 const role = ref<'student' | 'teacher' | 'donator'>('student')
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
+
+const stats = ref({ books: 0, users: 0, loans: 0 })
+
+const loadStats = async () => {
+  try {
+    stats.value = await statsService.getStats()
+  } catch (err) {
+    console.error('Erro ao carregar estatísticas:', err)
+  }
+}
+
+onMounted(loadStats)
 
 const validateForm = () => {
   errors.value = {}
@@ -27,8 +42,8 @@ const validateForm = () => {
   if (!name.value.trim()) {
     errors.value.name = 'O nome é obrigatório'
   }
-  if (!institution.value.trim()) {
-    errors.value.institution = 'Instituição é obrigatória'
+  if (!campus.value.trim()) {
+    errors.value.campus = 'Campus é obrigatório'
   }
   if (!password.value) {
     errors.value.password = 'Senha é obrigatória'
@@ -52,7 +67,7 @@ const handleSubmit = async () => {
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value,
-      institution: institution.value.trim(),
+      campus: campus.value.trim(),
       role: role.value,
       points: 0,
       created_at: new Date().toISOString(),
@@ -74,10 +89,11 @@ const roleLabels: Record<string, string> = {
 
 <template>
   <div class="auth-page">
-    <!-- Lado esquerdo: banner verde -->
     <aside class="auth-side">
       <div class="auth-side-logo">
-        <span class="auth-side-logo-icon">E</span>
+        <div class="auth-side-logo-img">
+          <Logo />
+        </div>
         <span class="auth-side-logo-text">Estante Viva</span>
       </div>
       <h2 class="auth-side-headline">
@@ -88,11 +104,11 @@ const roleLabels: Record<string, string> = {
       </p>
       <div class="auth-side-stats">
         <div>
-          <span class="auth-stat-value">500+</span>
+          <span class="auth-stat-value">{{ stats.books }}</span>
           <span class="auth-stat-label">Livros</span>
         </div>
         <div>
-          <span class="auth-stat-value">200+</span>
+          <span class="auth-stat-value">{{ stats.users }}</span>
           <span class="auth-stat-label">Usuários</span>
         </div>
         <div>
@@ -128,9 +144,14 @@ const roleLabels: Record<string, string> = {
           </div>
 
           <div class="form-group">
-            <label for="institution">Instituição</label>
-            <input id="institution" v-model="institution" type="text" placeholder="Nome da instituição" />
-            <span v-if="errors.institution" class="status-note">{{ errors.institution }}</span>
+            <label for="campus">Campus</label>
+            <select id="campus" v-model="campus">
+              <option value="" disabled>Selecione um campus</option>
+              <option v-for="campus in campusOptions" :key="campus" :value="campus">
+                {{ campus }}
+              </option>
+            </select>
+            <span v-if="errors.campus" class="status-note">{{ errors.campus }}</span>
           </div>
 
           <div class="form-group">

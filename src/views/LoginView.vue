@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/services/auth'
+import { statsService } from '@/services'
 import { validateEmail } from '@/utils'
+import Logo from '@/components/common/Logo.vue'
 
 const router = useRouter()
 const { login } = useAuth()
@@ -12,6 +14,18 @@ const password = ref('')
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
+
+const stats = ref({ books: 0, users: 0, loans: 0 })
+
+const loadStats = async () => {
+  try {
+    stats.value = await statsService.getStats()
+  } catch (err) {
+    console.error('Erro ao carregar estatísticas:', err)
+  }
+}
+
+onMounted(loadStats)
 
 const showForgotPassword = ref(false)
 const forgotEmail = ref('')
@@ -59,7 +73,9 @@ const handleForgotPassword = () => { forgotSent.value = true }
     <!-- Lado esquerdo: banner verde -->
     <aside class="auth-side">
       <div class="auth-side-logo">
-        <span class="auth-side-logo-icon">E</span>
+        <div class="auth-side-logo-img">
+          <Logo />
+        </div>
         <span class="auth-side-logo-text">Estante Viva</span>
       </div>
       <h2 class="auth-side-headline">
@@ -70,15 +86,15 @@ const handleForgotPassword = () => { forgotSent.value = true }
       </p>
       <div class="auth-side-stats">
         <div>
-          <span class="auth-stat-value">500+</span>
+          <span class="auth-stat-value">{{ stats.books }}</span>
           <span class="auth-stat-label">Livros</span>
         </div>
         <div>
-          <span class="auth-stat-value">200+</span>
+          <span class="auth-stat-value">{{ stats.users }}</span>
           <span class="auth-stat-label">Usuários</span>
         </div>
         <div>
-          <span class="auth-stat-value">1.2k</span>
+          <span class="auth-stat-value">{{ stats.loans }}</span>
           <span class="auth-stat-label">Empréstimos</span>
         </div>
       </div>
