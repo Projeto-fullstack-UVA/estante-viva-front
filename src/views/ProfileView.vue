@@ -1,26 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
-import { loanService, reservationService, userService, donationRequestService } from '@/services'
-import { formatDate, formatPoints, getStatusLabel } from '@/utils'
-import type { Loan, Reservation, DonationRequest } from '@/types'
+import { loanService } from '@/services'
+import { formatDate, formatPoints } from '@/utils'
+import type { Loan } from '@/types'
 
-const router = useRouter()
 const { user, refreshUser } = useAuth()
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 const loans = ref<Loan[]>([])
 const activeLoans = ref<Loan[]>([])
 const returnedLoans = ref<Loan[]>([])
-const reservations = ref<Reservation[]>([])
-const donationRequests = ref<DonationRequest[]>([])
-const showPasswordModal = ref(false)
-const passwordForm = ref({ current: '', next: '', confirm: '' })
-const passwordErrors = ref<Record<string, string>>({})
-const passwordSuccess = ref(false)
-const passwordSubmitting = ref(false)
 
 const loadUserData = async () => {
   if (!user.value) return
@@ -28,16 +19,10 @@ const loadUserData = async () => {
     isLoading.value = true
     error.value = null
     await refreshUser()
-    const [userLoans, userReservations, userDonationRequests] = await Promise.all([
-      loanService.getUserLoans(user.value.id),
-      reservationService.getUserReservations(user.value.id),
-      donationRequestService.getUserDonationRequests(user.value.id),
-    ])
+    const userLoans = await loanService.getUserLoans(user.value.id)
     loans.value = userLoans
     activeLoans.value = userLoans.filter((l) => !l.returned_at)
     returnedLoans.value = userLoans.filter((l) => !!l.returned_at)
-    reservations.value = userReservations
-    donationRequests.value = userDonationRequests
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao carregar dados'
   } finally {
@@ -51,65 +36,6 @@ const handleReturn = async (loanId: number) => {
     await loadUserData()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao devolver livro'
-  }
-}
-
-const handleCancelReservation = async (bookId: number) => {
-  if (!user.value) return
-  try {
-    await reservationService.cancelReservation(user.value.id, bookId)
-    await loadUserData()
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erro ao cancelar reserva'
-  }
-}
-
-const openPasswordModal = () => {
-  passwordForm.value = { current: '', next: '', confirm: '' }
-  passwordErrors.value = {}
-  passwordSuccess.value = false
-  showPasswordModal.value = true
-}
-
-const closePasswordModal = () => {
-  showPasswordModal.value = false
-}
-
-const validatePasswordForm = () => {
-  passwordErrors.value = {}
-  if (!passwordForm.value.current) {
-    passwordErrors.value.current = 'Senha atual é obrigatória'
-  }
-  if (!passwordForm.value.next) {
-    passwordErrors.value.next = 'Nova senha é obrigatória'
-  } else if (passwordForm.value.next.length < 6) {
-    passwordErrors.value.next = 'Nova senha deve ter pelo menos 6 caracteres'
-  }
-  if (!passwordForm.value.confirm) {
-    passwordErrors.value.confirm = 'Confirmação de senha é obrigatória'
-  } else if (passwordForm.value.next !== passwordForm.value.confirm) {
-    passwordErrors.value.confirm = 'As senhas não coincidem'
-  }
-  return Object.keys(passwordErrors.value).length === 0
-}
-
-const handleChangePassword = async () => {
-  if (!user.value || !validatePasswordForm()) return
-  try {
-    passwordSubmitting.value = true
-    await userService.changePassword(user.value.id, passwordForm.value.current, passwordForm.value.next)
-    passwordSuccess.value = true
-    passwordForm.value = { current: '', next: '', confirm: '' }
-    setTimeout(() => {
-      closePasswordModal()
-    }, 1800)
-  } catch (err) {
-    passwordErrors.value.submit =
-      err instanceof Error && err.message.includes('incorrect')
-        ? 'Senha atual incorreta'
-        : 'Erro ao alterar senha'
-  } finally {
-    passwordSubmitting.value = false
   }
 }
 
@@ -129,13 +55,6 @@ const roleLabel: Record<string, string> = {
   admin: 'Administrador',
 }
 
-const donationStatusLabel: Record<string, string> = {
-  pending: 'Pendente',
-  scheduled: 'Agendado',
-  rejected: 'Rejeitado',
-  completed: 'Concluído',
-}
-
 onMounted(() => {
   loadUserData()
 })
@@ -153,14 +72,6 @@ onMounted(() => {
         <p>{{ user?.email }} &bull; {{ roleLabel[user?.role ?? ''] ?? user?.role }}</p>
         <p>{{ user?.campus }}</p>
       </div>
-      <div class="profile-hero-actions">
-        <button type="button" class="btn" @click="router.push('/donate')">
-          Doar Livro
-        </button>
-        <button type="button" class="btn secondary" @click="openPasswordModal">
-          Alterar senha
-        </button>
-      </div>
     </div>
 
     <!-- Stats -->
@@ -172,10 +83,6 @@ onMounted(() => {
       <div class="stat-card">
         <span class="stat-card-value">{{ activeLoans.length }}</span>
         <span class="stat-card-label">Empréstimos ativos</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ reservations.length }}</span>
-        <span class="stat-card-label">Reservas</span>
       </div>
       <div class="stat-card">
         <span class="stat-card-value">{{ returnedLoans.length }}</span>
@@ -194,7 +101,7 @@ onMounted(() => {
       <div class="info-grid">
         <div class="info-item">
           <span class="info-label">Campus</span>
-          <span class="info-value">{{ user?.campus ?? '—' }}</span>
+          <span class="info-value">{{ user?.campus || '—' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Perfil</span>
@@ -202,7 +109,7 @@ onMounted(() => {
         </div>
         <div class="info-item">
           <span class="info-label">Membro desde</span>
-          <span class="info-value">{{ formatDate(user?.created_at ?? '') }}</span>
+          <span class="info-value">{{ user?.created_at ? formatDate(user.created_at) : '—' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Email</span>
@@ -241,30 +148,6 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Reservas -->
-    <div v-if="reservations.length > 0" class="card" style="margin-bottom: 1.25rem;">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Reservas</div>
-          <div class="card-subtitle">Livros reservados aguardando disponibilidade</div>
-        </div>
-        <span class="badge badge-gray">{{ reservations.length }}</span>
-      </div>
-      <div class="section-grid">
-        <div v-for="reservation in reservations" :key="reservation.id" class="profile-card">
-          <span class="profile-card-title">Título</span>
-          <strong>{{ reservation.book_title }}</strong>
-          <p>{{ reservation.book_author }}</p>
-          <p style="font-size: 0.8rem; color: var(--gray-500);">
-            Reservado em {{ formatDate(reservation.created_at) }}
-          </p>
-          <button type="button" class="btn secondary small" @click="handleCancelReservation(reservation.book_id)">
-            Cancelar reserva
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Histórico -->
     <div v-if="returnedLoans.length > 0" class="card" style="margin-bottom: 1.25rem;">
       <div class="card-header">
@@ -293,87 +176,6 @@ onMounted(() => {
         </table>
       </div>
     </div>
-
-    <div v-if="donationRequests.length > 0" class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">Solicitações de Doação</div>
-          <div class="card-subtitle">Acompanhe o agendamento, avaliação e créditos</div>
-        </div>
-        <span class="badge badge-green">{{ donationRequests.length }}</span>
-      </div>
-      <div class="table-shell">
-        <table class="table-view">
-          <thead>
-            <tr>
-              <th>Livro</th>
-              <th>Status</th>
-              <th>Agendado para</th>
-              <th>Créditos</th>
-              <th>Atualizado em</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="request in donationRequests" :key="request.id">
-              <td>
-                <strong>{{ request.title }}</strong>
-                <div style="font-size: 0.85rem; color: var(--gray-500);">{{ request.author }}</div>
-              </td>
-              <td>
-                <span class="badge" :class="request.status === 'completed' ? 'badge-green' : request.status === 'rejected' ? 'badge-red' : 'badge-gray'">
-                  {{ donationStatusLabel[request.status] }}
-                </span>
-              </td>
-              <td>{{ formatDate(request.scheduled_at) }}</td>
-              <td>
-                <span v-if="request.status === 'completed' && request.assessed_points !== null" style="color: var(--green-600); font-weight: 600;">
-                  +{{ request.assessed_points }} pontos
-                </span>
-                <span v-else>—</span>
-              </td>
-              <td>{{ formatDate(request.updated_at) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Modal: Alterar senha -->
-    <Teleport to="body">
-      <div v-if="showPasswordModal" class="modal-backdrop" @click.self="closePasswordModal">
-        <div class="modal-panel">
-          <div class="modal-header">
-            <span class="modal-title">Alterar senha</span>
-            <button type="button" class="modal-close" @click="closePasswordModal">×</button>
-          </div>
-          <div v-if="passwordSuccess" class="callout info">
-            Senha alterada com sucesso!
-          </div>
-          <form v-else @submit.prevent="handleChangePassword">
-            <div v-if="passwordErrors.submit" class="callout">{{ passwordErrors.submit }}</div>
-            <div class="form-group">
-              <label for="current-password">Senha atual</label>
-              <input id="current-password" v-model="passwordForm.current" type="password" placeholder="••••••••" />
-              <span v-if="passwordErrors.current" class="status-note">{{ passwordErrors.current }}</span>
-            </div>
-            <div class="form-group">
-              <label for="new-password">Nova senha</label>
-              <input id="new-password" v-model="passwordForm.next" type="password" placeholder="••••••••" />
-              <span v-if="passwordErrors.next" class="status-note">{{ passwordErrors.next }}</span>
-            </div>
-            <div class="form-group">
-              <label for="confirm-new-password">Confirmar nova senha</label>
-              <input id="confirm-new-password" v-model="passwordForm.confirm" type="password" placeholder="••••••••" />
-              <span v-if="passwordErrors.confirm" class="status-note">{{ passwordErrors.confirm }}</span>
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn">{{ passwordSubmitting ? 'Salvando...' : 'Salvar senha' }}</button>
-              <button type="button" class="btn secondary" @click="closePasswordModal">Cancelar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
   </AuthenticatedLayout>
 </template>
 

@@ -13,13 +13,37 @@ import type {
 } from '@/types'
 import { apiClient } from './api'
 
+// --- API shape adapters -----------------------------------------------------
+// The Go API and the frontend disagree on a few field names/types, so we
+// normalize at the service boundary instead of leaking the differences into
+// the views.
+
+// API users carry `score`; the UI uses `points`.
+const normalizeUser = (raw: any): User => ({
+  ...raw,
+  points: raw?.score ?? raw?.points ?? 0,
+})
+
+// API serializes book ids as strings; the UI (and the loans endpoint) use numbers.
+const normalizeBook = (raw: any): Book => ({
+  ...raw,
+  id: Number(raw?.id),
+})
+
+// The API binds dates as RFC3339 (time.Time); inputs may be `YYYY-MM-DD`.
+const toRFC3339 = (value: string): string => {
+  const d = new Date(value)
+  return Number.isNaN(d.getTime()) ? value : d.toISOString()
+}
+
 export const userService = {
   async getUser(id: number): Promise<User> {
-    return apiClient.get<User>(`/users/${id}`)
+    return normalizeUser(await apiClient.get<User>(`/users/${id}`))
   },
 
   async getAllUsers(): Promise<User[]> {
-    return apiClient.get<User[]>('/users')
+    const users = await apiClient.get<User[]>('/users')
+    return users.map(normalizeUser)
   },
 
   async createUser(data: {
@@ -29,9 +53,17 @@ export const userService = {
     role: 'student' | 'teacher' | 'donator' | 'admin'
     points: number
     campus: string
-    created_at: string
-  }): Promise<{ message: string; success: boolean }> {
-    return apiClient.post('/users', data)
+    birthDate: string
+  }): Promise<{ id: number; created_at: string }> {
+    return apiClient.post('/users', {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      role: data.role,
+      campus: data.campus,
+      score: data.points,
+      birthDate: toRFC3339(data.birthDate),
+    })
   },
 
   async changePassword(
@@ -53,11 +85,12 @@ export const userService = {
 
 export const bookService = {
   async getAllBooks(): Promise<Book[]> {
-    return apiClient.get<Book[]>('/books')
+    const books = await apiClient.get<Book[]>('/books')
+    return books.map(normalizeBook)
   },
 
   async getBook(id: number): Promise<Book> {
-    return apiClient.get<Book>(`/books/${id}`)
+    return normalizeBook(await apiClient.get<Book>(`/books/${id}`))
   },
 
   async createBook(data: {
@@ -69,7 +102,14 @@ export const bookService = {
     destination?: 'library' | 'sale'
     created_at: string
   }): Promise<{ message: string; success: boolean }> {
-    return apiClient.post('/books', data)
+    return apiClient.post('/books', {
+      title: data.title,
+      author: data.author,
+      release_date: toRFC3339(data.release_date),
+      edition: data.edition,
+      status: data.status,
+      created_at: toRFC3339(data.created_at),
+    })
   },
 }
 
@@ -107,8 +147,10 @@ export const reservationService = {
 }
 
 export const statsService = {
+  // The API has no public stats endpoint; the login/signup banners fall back to
+  // these neutral values so the unauthenticated pages render without errors.
   async getStats(): Promise<{ users: number; books: number; loans: number }> {
-    return apiClient.get('/stats')
+    return { users: 0, books: 0, loans: 0 }
   },
 }
 

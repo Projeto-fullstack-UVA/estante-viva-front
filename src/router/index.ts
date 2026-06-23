@@ -35,24 +35,6 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: '/donate',
-      name: 'donate',
-      component: () => import('@/views/DonateView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/new-books',
-      name: 'new-books',
-      component: () => import('@/views/NewBooksView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/rankings',
-      name: 'rankings',
-      component: () => import('@/views/RankingsView.vue'),
-      meta: { requiresAuth: true },
-    },
-    {
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/admin/AdminDashboardView.vue'),
@@ -74,12 +56,6 @@ const router = createRouter({
       path: '/admin/loans',
       name: 'admin-loans',
       component: () => import('@/views/admin/AdminLoansView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
-    },
-    {
-      path: '/admin/donations',
-      name: 'admin-donations',
-      component: () => import('@/views/admin/AdminDonationsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {

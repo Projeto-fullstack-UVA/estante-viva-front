@@ -31,17 +31,8 @@ const isActive = (path: string): boolean => {
         <RouterLink to="/dashboard" class="nav-link" :class="{ active: isActive('/dashboard') }">
           Meu Perfil
         </RouterLink>
-        <RouterLink to="/rankings" class="nav-link" :class="{ active: isActive('/rankings') }">
-          Ranking
-        </RouterLink>
         <RouterLink to="/library" class="nav-link" :class="{ active: isActive('/library') }">
           Biblioteca
-        </RouterLink>
-        <RouterLink to="/new-books" class="nav-link" :class="{ active: isActive('/new-books') }">
-          Livros Novos
-        </RouterLink>
-        <RouterLink to="/donate" class="nav-link" :class="{ active: isActive('/donate') }">
-          Doar Livro
         </RouterLink>
         <RouterLink v-if="user?.role === 'admin'" to="/admin" class="nav-link" :class="{ active: route.path.startsWith('/admin') }">
           Painel Admin

@@ -2,19 +2,14 @@
 import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
 import { userService } from '@/services'
-import { useAuth } from '@/services/auth'
 import { formatDate } from '@/utils'
 import type { User } from '@/types'
 
-const { user: currentUser } = useAuth()
 const users = ref<User[]>([])
 const isLoading = ref(true)
 const searchFilter = ref('')
 const roleFilter = ref('all')
 const isAddingUser = ref(false)
-const isPasswordModalOpen = ref(false)
-const selectedUser = ref<User | null>(null)
-const passwordForm = ref({ password: '', confirm: '' })
 const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
 
 const newUser = ref({
@@ -23,7 +18,8 @@ const newUser = ref({
   password: '',
   role: 'student' as 'student' | 'teacher' | 'donator' | 'admin',
   points: 0,
-  campus: '' as (typeof campusOptions)[number] | ''
+  campus: '' as (typeof campusOptions)[number] | '',
+  birthDate: ''
 })
 
 const loadUsers = async () => {
@@ -37,46 +33,9 @@ const loadUsers = async () => {
   }
 }
 
-const openPasswordModal = (user: User) => {
-  selectedUser.value = user
-  passwordForm.value = { password: '', confirm: '' }
-  isPasswordModalOpen.value = true
-}
-
-const closePasswordModal = () => {
-  isPasswordModalOpen.value = false
-  selectedUser.value = null
-  passwordForm.value = { password: '', confirm: '' }
-}
-
-const handleChangeUserPassword = async () => {
-  if (!currentUser.value || !selectedUser.value) return
-
-  if (passwordForm.value.password.length < 6) {
-    alert('A nova senha deve ter pelo menos 6 caracteres')
-    return
-  }
-
-  if (passwordForm.value.password !== passwordForm.value.confirm) {
-    alert('As senhas nao coincidem')
-    return
-  }
-
-  try {
-    await userService.adminChangePassword(currentUser.value.id, selectedUser.value.id, passwordForm.value.password)
-    closePasswordModal()
-    alert('Senha atualizada com sucesso')
-  } catch (error) {
-    alert('Erro ao atualizar senha')
-  }
-}
-
 const handleAddUser = async () => {
   try {
-    await userService.createUser({
-      ...newUser.value,
-      created_at: new Date().toISOString()
-    })
+    await userService.createUser({ ...newUser.value })
     isAddingUser.value = false
     newUser.value = {
       name: '',
@@ -84,7 +43,8 @@ const handleAddUser = async () => {
       password: '',
       role: 'student',
       points: 0,
-      campus: ''
+      campus: '',
+      birthDate: ''
     }
     await loadUsers()
   } catch (error) {
@@ -157,7 +117,6 @@ onMounted(loadUsers)
             <th>Pontos</th>
             <th>Campus</th>
             <th>Cadastro</th>
-            <th style="width: 160px;">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -177,14 +136,9 @@ onMounted(loadUsers)
             <td>{{ user.points }}</td>
             <td>{{ user.campus }}</td>
             <td>{{ formatDate(user.created_at) }}</td>
-            <td>
-              <button type="button" class="btn secondary small" @click="openPasswordModal(user)">
-                Alterar senha
-              </button>
-            </td>
           </tr>
           <tr v-if="filteredUsers.length === 0">
-            <td colspan="7" class="empty-table">Nenhum usuário encontrado.</td>
+            <td colspan="6" class="empty-table">Nenhum usuário encontrado.</td>
           </tr>
         </tbody>
       </table>
@@ -209,6 +163,10 @@ onMounted(loadUsers)
           <div class="form-group">
             <label>Senha</label>
             <input v-model="newUser.password" type="password" required placeholder="Senha (mínimo 6 caracteres)" minlength="6" />
+          </div>
+          <div class="form-group">
+            <label>Data de nascimento</label>
+            <input v-model="newUser.birthDate" type="date" required />
           </div>
           <div class="form-row">
             <div class="form-group">
@@ -242,43 +200,6 @@ onMounted(loadUsers)
       </div>
     </div>
 
-    <div v-if="isPasswordModalOpen && selectedUser" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Alterar Senha</h2>
-          <button @click="closePasswordModal" class="close-btn">&times;</button>
-        </div>
-        <form @submit.prevent="handleChangeUserPassword" class="modal-form">
-          <div class="callout neutral" style="margin-bottom: 1rem;">
-            Definindo nova senha para <strong>{{ selectedUser.name }}</strong>.
-          </div>
-          <div class="form-group">
-            <label>Nova senha</label>
-            <input
-              v-model="passwordForm.password"
-              type="password"
-              required
-              minlength="6"
-              placeholder="Minimo de 6 caracteres"
-            />
-          </div>
-          <div class="form-group">
-            <label>Confirmar nova senha</label>
-            <input
-              v-model="passwordForm.confirm"
-              type="password"
-              required
-              minlength="6"
-              placeholder="Repita a nova senha"
-            />
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="closePasswordModal" class="btn secondary">Cancelar</button>
-            <button type="submit" class="btn">Salvar nova senha</button>
-          </div>
-        </form>
-      </div>
-    </div>
   </AdminLayout>
 </template>
 

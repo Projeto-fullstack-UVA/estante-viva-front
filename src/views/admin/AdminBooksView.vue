@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
-import { bookService, newBookStoreService } from '@/services'
-import { useAuth } from '@/services/auth'
+import { bookService } from '@/services'
 import { formatDate, getStatusLabel } from '@/utils'
-import type { Book, NewBook } from '@/types'
+import type { Book } from '@/types'
 
-const { user } = useAuth()
 const books = ref<Book[]>([])
-const saleBooks = ref<NewBook[]>([])
 const isLoading = ref(true)
 const searchFilter = ref('')
-const destinationFilter = ref<'all' | 'library' | 'sale'>('all')
+const statusFilter = ref<'all' | 'available' | 'lent'>('all')
 const isAddingBook = ref(false)
 
 const newBook = ref({
@@ -20,26 +17,12 @@ const newBook = ref({
   release_date: new Date().toISOString().split('T')[0] as string,
   edition: '',
   status: 'available' as 'available' | 'lent',
-  destination: 'library' as 'library' | 'sale',
-  credits_cost: 10,
-  stock: 1,
-  description: '',
-  cover_url: '',
 })
-
-type AdminBookRow =
-  | (Book & { rowType: 'library'; detailsLabel: string })
-  | (NewBook & { rowType: 'sale'; status: 'available'; detailsLabel: string })
 
 const loadBooks = async () => {
   try {
     isLoading.value = true
-    const [libraryBooks, storeBooks] = await Promise.all([
-      bookService.getAllBooks(),
-      newBookStoreService.getNewBooks(),
-    ])
-    books.value = libraryBooks
-    saleBooks.value = storeBooks
+    books.value = await bookService.getAllBooks()
   } catch (error) {
     console.error('Erro ao carregar livros:', error)
   } finally {
@@ -48,54 +31,25 @@ const loadBooks = async () => {
 }
 
 const filteredBooks = computed(() => {
-  const merged: AdminBookRow[] = [
-    ...books.value.map((book) => ({
-      ...book,
-      rowType: 'library' as const,
-      detailsLabel: getStatusLabel(book.status),
-    })),
-    ...saleBooks.value.map((book) => ({
-      ...book,
-      rowType: 'sale' as const,
-      status: 'available' as const,
-      detailsLabel: `${book.credits_cost} créditos · ${book.stock} em estoque`,
-    })),
-  ]
-
-  return merged.filter((b) => {
-    const matchesSearch = b.title.toLowerCase().includes(searchFilter.value.toLowerCase()) || 
-                         b.author.toLowerCase().includes(searchFilter.value.toLowerCase())
-    const matchesDestination = destinationFilter.value === 'all' || b.rowType === destinationFilter.value
-    return matchesSearch && matchesDestination
+  return books.value.filter((b) => {
+    const matchesSearch =
+      b.title.toLowerCase().includes(searchFilter.value.toLowerCase()) ||
+      b.author.toLowerCase().includes(searchFilter.value.toLowerCase())
+    const matchesStatus = statusFilter.value === 'all' || b.status === statusFilter.value
+    return matchesSearch && matchesStatus
   })
 })
 
 const handleAddBook = async () => {
   try {
-    if (!user.value) return
-
-    if (newBook.value.destination === 'sale') {
-      await newBookStoreService.createCatalogItem(user.value.id, {
-        title: newBook.value.title,
-        author: newBook.value.author,
-        release_date: newBook.value.release_date,
-        edition: newBook.value.edition || undefined,
-        description: newBook.value.description || undefined,
-        cover_url: newBook.value.cover_url || undefined,
-        credits_cost: newBook.value.credits_cost,
-        stock: newBook.value.stock,
-      })
-    } else {
-      await bookService.createBook({
-        title: newBook.value.title,
-        author: newBook.value.author,
-        release_date: newBook.value.release_date,
-        edition: newBook.value.edition || undefined,
-        status: newBook.value.status,
-        destination: 'library',
-        created_at: new Date().toISOString(),
-      })
-    }
+    await bookService.createBook({
+      title: newBook.value.title,
+      author: newBook.value.author,
+      release_date: newBook.value.release_date,
+      edition: newBook.value.edition || undefined,
+      status: newBook.value.status,
+      created_at: new Date().toISOString(),
+    })
 
     isAddingBook.value = false
     newBook.value = {
@@ -104,11 +58,6 @@ const handleAddBook = async () => {
       release_date: new Date().toISOString().split('T')[0] as string,
       edition: '',
       status: 'available',
-      destination: 'library',
-      credits_cost: 10,
-      stock: 1,
-      description: '',
-      cover_url: '',
     }
     await loadBooks()
   } catch (error) {
@@ -133,16 +82,16 @@ onMounted(loadBooks)
 
     <!-- Filtros -->
     <div class="filters-bar">
-      <input 
-        v-model="searchFilter" 
-        type="text" 
-        placeholder="Buscar por título ou autor..." 
+      <input
+        v-model="searchFilter"
+        type="text"
+        placeholder="Buscar por título ou autor..."
         class="search-input"
       />
-      <select v-model="destinationFilter" class="status-select">
-        <option value="all">Todos os destinos</option>
-        <option value="library">Biblioteca</option>
-        <option value="sale">Venda</option>
+      <select v-model="statusFilter" class="status-select">
+        <option value="all">Todos os status</option>
+        <option value="available">Disponível</option>
+        <option value="lent">Emprestado</option>
       </select>
     </div>
 
@@ -158,12 +107,11 @@ onMounted(loadBooks)
             <th>Autor</th>
             <th>Edição</th>
             <th>Lançamento</th>
-            <th>Destino</th>
-            <th>Detalhes</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="book in filteredBooks" :key="`${book.rowType}-${book.id}`">
+          <tr v-for="book in filteredBooks" :key="book.id">
             <td>
               <div class="book-cell">
                 <span class="book-icon">📖</span>
@@ -174,18 +122,13 @@ onMounted(loadBooks)
             <td>{{ book.edition || '-' }}</td>
             <td>{{ formatDate(book.release_date) }}</td>
             <td>
-              <span class="badge" :class="book.rowType === 'sale' ? 'badge-green' : 'badge-gray'">
-                {{ book.rowType === 'sale' ? 'Venda' : 'Biblioteca' }}
-              </span>
-            </td>
-            <td>
-              <span class="badge" :class="book.rowType === 'sale' || book.status === 'available' ? 'badge-green' : 'badge-red'">
-                {{ book.detailsLabel }}
+              <span class="badge" :class="book.status === 'available' ? 'badge-green' : 'badge-red'">
+                {{ getStatusLabel(book.status) }}
               </span>
             </td>
           </tr>
           <tr v-if="filteredBooks.length === 0">
-            <td colspan="6" class="empty-table">Nenhum livro encontrado.</td>
+            <td colspan="5" class="empty-table">Nenhum livro encontrado.</td>
           </tr>
         </tbody>
       </table>
@@ -217,39 +160,12 @@ onMounted(loadBooks)
               <input v-model="newBook.edition" type="text" placeholder="Ex: 1ª Edição" />
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Destino</label>
-              <select v-model="newBook.destination" required>
-                <option value="library">Biblioteca</option>
-                <option value="sale">Venda</option>
-              </select>
-            </div>
-            <div v-if="newBook.destination === 'library'" class="form-group">
-              <label>Status inicial</label>
-              <select v-model="newBook.status" required>
-                <option value="available">Disponível</option>
-                <option value="lent">Emprestado</option>
-              </select>
-            </div>
-            <div v-else class="form-group">
-              <label>Custo em créditos</label>
-              <input v-model.number="newBook.credits_cost" type="number" min="0" required />
-            </div>
-          </div>
-          <div v-if="newBook.destination === 'sale'" class="form-row">
-            <div class="form-group">
-              <label>Estoque</label>
-              <input v-model.number="newBook.stock" type="number" min="1" required />
-            </div>
-            <div class="form-group">
-              <label>URL da capa</label>
-              <input v-model="newBook.cover_url" type="url" placeholder="https://..." />
-            </div>
-          </div>
-          <div v-if="newBook.destination === 'sale'" class="form-group">
-            <label>Descrição</label>
-            <input v-model="newBook.description" type="text" placeholder="Resumo ou observação para a vitrine" />
+          <div class="form-group">
+            <label>Status inicial</label>
+            <select v-model="newBook.status" required>
+              <option value="available">Disponível</option>
+              <option value="lent">Emprestado</option>
+            </select>
           </div>
           <div class="modal-actions">
             <button type="button" @click="isAddingBook = false" class="btn secondary">Cancelar</button>

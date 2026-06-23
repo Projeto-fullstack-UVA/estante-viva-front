@@ -41,10 +41,6 @@ const handleLogout = () => {
           <span class="nav-icon">🤝</span>
           <span>Empréstimos</span>
         </RouterLink>
-        <RouterLink to="/admin/donations" class="nav-item" active-class="active">
-          <span class="nav-icon">🗓️</span>
-          <span>Doações</span>
-        </RouterLink>
       </nav>
 
       <div class="sidebar-footer">

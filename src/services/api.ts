@@ -1,4 +1,18 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+
+const TOKEN_KEY = 'token'
+
+export const tokenStore = {
+  get(): string | null {
+    return localStorage.getItem(TOKEN_KEY)
+  },
+  set(token: string) {
+    localStorage.setItem(TOKEN_KEY, token)
+  },
+  clear() {
+    localStorage.removeItem(TOKEN_KEY)
+  },
+}
 
 export const apiClient = {
   async request<T>(
@@ -8,6 +22,11 @@ export const apiClient = {
   ): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+    }
+
+    const token = tokenStore.get()
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
     }
 
     const config: RequestInit = {
@@ -26,7 +45,9 @@ export const apiClient = {
       throw new Error(text || `API Error: ${response.status}`)
     }
 
-    return response.json()
+    // Some endpoints return an empty body (e.g. 204 No Content).
+    const raw = await response.text()
+    return (raw ? JSON.parse(raw) : undefined) as T
   },
 
   get<T>(endpoint: string) {

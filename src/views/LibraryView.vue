@@ -2,16 +2,15 @@
 import { ref, computed, onMounted } from 'vue'
 import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
-import { bookService, loanService, reservationService } from '@/services'
+import { bookService, loanService } from '@/services'
 import { formatDate, getStatusLabel } from '@/utils'
-import type { Book, Loan, Reservation } from '@/types'
+import type { Book, Loan } from '@/types'
 
 const { user } = useAuth()
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 const books = ref<Book[]>([])
 const activeLoans = ref<Loan[]>([])
-const reservations = ref<Reservation[]>([])
 const titleFilter = ref('')
 const authorFilter = ref('')
 const statusFilter = ref<string>('all')
@@ -20,10 +19,9 @@ const loadData = async () => {
   try {
     isLoading.value = true
     error.value = null
-    ;[books.value, activeLoans.value, reservations.value] = await Promise.all([
+    ;[books.value, activeLoans.value] = await Promise.all([
       bookService.getAllBooks(),
       user.value ? loanService.getUserLoans(user.value.id) : Promise.resolve([]),
-      user.value ? reservationService.getUserReservations(user.value.id) : Promise.resolve([]),
     ])
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao carregar livros'
@@ -52,10 +50,6 @@ const getActiveLoanForBook = (bookId: number): Loan | undefined => {
   return activeLoans.value.find((l) => l.book_id === bookId && !l.returned_at)
 }
 
-const hasReservationForBook = (bookId: number): boolean => {
-  return reservations.value.some((r) => r.book_id === bookId)
-}
-
 const handleBorrow = async (bookId: number) => {
   if (!user.value) return
   try {
@@ -72,26 +66,6 @@ const handleReturn = async (loanId: number) => {
     await loadData()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao devolver livro'
-  }
-}
-
-const handleReserve = async (bookId: number) => {
-  if (!user.value) return
-  try {
-    await reservationService.reserveBook(user.value.id, bookId)
-    await loadData()
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erro ao reservar livro'
-  }
-}
-
-const handleCancelReservation = async (bookId: number) => {
-  if (!user.value) return
-  try {
-    await reservationService.cancelReservation(user.value.id, bookId)
-    await loadData()
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Erro ao cancelar reserva'
   }
 }
 
@@ -204,22 +178,6 @@ onMounted(() => {
           </template>
           <template v-else>
             <p style="font-size: 0.8rem; color: var(--gray-400);">Indisponível no momento</p>
-            <button
-              v-if="hasReservationForBook(book.id)"
-              type="button"
-              class="btn secondary small"
-              @click="handleCancelReservation(book.id)"
-            >
-              Cancelar reserva
-            </button>
-            <button
-              v-else
-              type="button"
-              class="btn outline-green small"
-              @click="handleReserve(book.id)"
-            >
-              Reservar
-            </button>
           </template>
         </div>
       </div>

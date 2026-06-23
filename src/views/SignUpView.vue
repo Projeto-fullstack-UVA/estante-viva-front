@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { apiClient } from '@/services/api'
-import { statsService } from '@/services'
+import { userService, statsService } from '@/services'
 import { validateEmail } from '@/utils'
 import Logo from '@/components/common/Logo.vue'
 
@@ -14,6 +13,7 @@ const name = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
 const campus = ref<(typeof campusOptions)[number] | ''>('')
+const birthDate = ref('')
 const role = ref<'student' | 'teacher' | 'donator'>('student')
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
@@ -45,6 +45,9 @@ const validateForm = () => {
   if (!campus.value.trim()) {
     errors.value.campus = 'Campus é obrigatório'
   }
+  if (!birthDate.value) {
+    errors.value.birthDate = 'Data de nascimento é obrigatória'
+  }
   if (!password.value) {
     errors.value.password = 'Senha é obrigatória'
   } else if (password.value.length < 6) {
@@ -63,14 +66,14 @@ const handleSubmit = async () => {
   if (isSubmitting.value) return
   try {
     isSubmitting.value = true
-    await apiClient.post('/users', {
+    await userService.createUser({
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value,
       campus: campus.value.trim(),
       role: role.value,
       points: 0,
-      created_at: new Date().toISOString(),
+      birthDate: birthDate.value,
     })
     router.push('/login')
   } catch {
@@ -152,6 +155,12 @@ const roleLabels: Record<string, string> = {
               </option>
             </select>
             <span v-if="errors.campus" class="status-note">{{ errors.campus }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="birthDate">Data de nascimento</label>
+            <input id="birthDate" v-model="birthDate" type="date" />
+            <span v-if="errors.birthDate" class="status-note">{{ errors.birthDate }}</span>
           </div>
 
           <div class="form-group">
