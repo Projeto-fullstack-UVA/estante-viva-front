@@ -19,14 +19,14 @@ import { apiClient } from './api'
 // the views.
 
 // API users carry `score`; the UI uses `points`.
-const normalizeUser = (raw: any): User => ({
-  ...raw,
-  points: raw?.score ?? raw?.points ?? 0,
+const normalizeUser = (raw: Record<string, unknown>): User => ({
+  ...(raw as unknown as User),
+  points: Number(raw?.score ?? raw?.points ?? 0),
 })
 
 // API serializes book ids as strings; the UI (and the loans endpoint) use numbers.
-const normalizeBook = (raw: any): Book => ({
-  ...raw,
+const normalizeBook = (raw: Record<string, unknown>): Book => ({
+  ...(raw as unknown as Book),
   id: Number(raw?.id),
 })
 
@@ -38,11 +38,11 @@ const toRFC3339 = (value: string): string => {
 
 export const userService = {
   async getUser(id: number): Promise<User> {
-    return normalizeUser(await apiClient.get<User>(`/users/${id}`))
+    return normalizeUser(await apiClient.get<Record<string, unknown>>(`/users/${id}`))
   },
 
   async getAllUsers(): Promise<User[]> {
-    const users = await apiClient.get<User[]>('/users')
+    const users = await apiClient.get<Record<string, unknown>[]>('/users')
     return users.map(normalizeUser)
   },
 
@@ -85,12 +85,12 @@ export const userService = {
 
 export const bookService = {
   async getAllBooks(): Promise<Book[]> {
-    const books = await apiClient.get<Book[]>('/books')
+    const books = await apiClient.get<Record<string, unknown>[]>('/books')
     return books.map(normalizeBook)
   },
 
   async getBook(id: number): Promise<Book> {
-    return normalizeBook(await apiClient.get<Book>(`/books/${id}`))
+    return normalizeBook(await apiClient.get<Record<string, unknown>>(`/books/${id}`))
   },
 
   async createBook(data: {

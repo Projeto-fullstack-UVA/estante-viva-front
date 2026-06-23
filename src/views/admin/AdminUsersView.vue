@@ -48,6 +48,7 @@ const handleAddUser = async () => {
     }
     await loadUsers()
   } catch (error) {
+    console.error('Erro ao criar usuário:', error)
     alert('Erro ao criar usuário')
   }
 }

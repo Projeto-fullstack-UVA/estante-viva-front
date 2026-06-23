@@ -61,6 +61,7 @@ const handleAddBook = async () => {
     }
     await loadBooks()
   } catch (error) {
+    console.error('Erro ao adicionar livro:', error)
     alert('Erro ao adicionar livro')
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router'
 import { useAuth } from '@/services/auth'
-import Logo from '@/components/common/Logo.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 
 const { user, logout } = useAuth()
 const router = useRouter()
@@ -18,7 +18,7 @@ const handleLogout = () => {
       <div class="sidebar-header">
         <RouterLink to="/admin" class="brand">
           <div class="brand-logo">
-            <Logo />
+            <AppLogo />
           </div>
           <span>Estante <span class="brand-dot">Viva</span></span>
         </RouterLink>

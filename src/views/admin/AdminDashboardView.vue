@@ -29,6 +29,9 @@ const loadData = async () => {
 
 const activeLoansCount = computed(() => loans.value.filter(l => !l.returned_at).length)
 const availableBooksCount = computed(() => books.value.filter(b => b.status === 'available').length)
+const availablePercent = computed(() =>
+  books.value.length === 0 ? 0 : (availableBooksCount.value / books.value.length) * 100,
+)
 const lateLoansCount = computed(() => {
   const now = new Date()
   return loans.value.filter(l => !l.returned_at && new Date(l.return_date) < now).length
@@ -91,7 +94,7 @@ onMounted(loadData)
           <div class="progress-bar-container">
             <div 
               class="progress-bar" 
-              :style="{ width: `${(availableBooksCount / books.length) * 100}%` }"
+              :style="{ width: `${availablePercent}%` }"
             ></div>
           </div>
           <p class="metric-detail">

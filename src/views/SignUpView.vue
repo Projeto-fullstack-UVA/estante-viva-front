@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userService, statsService } from '@/services'
 import { validateEmail } from '@/utils'
-import Logo from '@/components/common/Logo.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 
 const router = useRouter()
 const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
@@ -82,12 +82,6 @@ const handleSubmit = async () => {
     isSubmitting.value = false
   }
 }
-
-const roleLabels: Record<string, string> = {
-  student: 'Aluno',
-  teacher: 'Professor',
-  donator: 'Doador',
-}
 </script>
 
 <template>
@@ -95,7 +89,7 @@ const roleLabels: Record<string, string> = {
     <aside class="auth-side">
       <div class="auth-side-logo">
         <div class="auth-side-logo-img">
-          <Logo />
+          <AppLogo />
         </div>
         <span class="auth-side-logo-text">Estante Viva</span>
       </div>

@@ -2,7 +2,7 @@ import type { Router } from 'vue-router'
 import { useAuth } from '@/services/auth'
 
 export function setupRouteGuards(router: Router) {
-  router.beforeEach((to, from) => {
+  router.beforeEach((to) => {
     const { isAuthenticated, user, loadStoredUser } = useAuth()
 
     loadStoredUser()

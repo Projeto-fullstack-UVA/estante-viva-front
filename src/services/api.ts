@@ -18,7 +18,7 @@ export const apiClient = {
   async request<T>(
     method: string,
     endpoint: string,
-    data?: Record<string, any>,
+    data?: unknown,
   ): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -54,15 +54,15 @@ export const apiClient = {
     return this.request<T>('GET', endpoint)
   },
 
-  post<T>(endpoint: string, data: Record<string, any>) {
+  post<T>(endpoint: string, data: unknown) {
     return this.request<T>('POST', endpoint, data)
   },
 
-  put<T>(endpoint: string, data: Record<string, any>) {
+  put<T>(endpoint: string, data: unknown) {
     return this.request<T>('PUT', endpoint, data)
   },
 
-  patch<T>(endpoint: string, data: Record<string, any>) {
+  patch<T>(endpoint: string, data: unknown) {
     return this.request<T>('PATCH', endpoint, data)
   },
 
@@ -70,7 +70,7 @@ export const apiClient = {
     return this.request<T>('DELETE', endpoint)
   },
 
-  delete_with_body<T>(endpoint: string, data: Record<string, any>) {
+  delete_with_body<T>(endpoint: string, data: unknown) {
     return this.request<T>('DELETE', endpoint, data)
   },
 }

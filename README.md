@@ -26,35 +26,30 @@ bun format     # run prettier on src/
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:3000` | Back-end base URL |
+| `VITE_API_BASE_URL` | `http://localhost:8080` | Back-end base URL |
 
-Create a `.env.local` file to override:
-
-```
-VITE_API_BASE_URL=http://localhost:3000
-```
-
-For production builds in this repository, `.env.production` already points to the deployed API:
+Copy `.env.example` to `.env.local` to override locally:
 
 ```
-VITE_API_BASE_URL=https://estanteviva.fly.dev
+VITE_API_BASE_URL=http://localhost:8080
 ```
 
-## Deploy
+## Deploy (Cloudflare Pages)
 
-The front-end is ready to be deployed as a static SPA. For Vercel:
+The front-end is a static SPA. On Cloudflare Pages:
 
-```bash
-vercel --prod
-```
+1. Connect this repository (or run `bunx wrangler pages deploy dist` after a build).
+2. Build settings:
+   - **Build command:** `bun run build`
+   - **Build output directory:** `dist`
+3. Set the environment variable `VITE_API_BASE_URL` (Production + Preview) to the
+   deployed API URL — e.g. `https://estante-viva-api.onrender.com`.
 
-`vercel.json` rewrites all routes to `index.html`, which is required for Vue Router history navigation.
+`public/_redirects` rewrites all routes to `index.html` (`/* /index.html 200`),
+which is required for Vue Router history-mode deep links to resolve.
 
-After publishing the front-end, allow its domain in the Fly back-end:
-
-```bash
-flyctl secrets set ALLOWED_ORIGINS=https://your-frontend-domain.vercel.app
-```
+After publishing, allow the Pages domain in the back-end CORS allow-list
+(e.g. `https://<project>.pages.dev`).
 
 ## Project structure
 

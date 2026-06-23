@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '@/services/auth'
-import Logo from '@/components/common/Logo.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -22,7 +22,7 @@ const isActive = (path: string): boolean => {
     <div class="header-inner">
       <RouterLink to="/dashboard" class="brand">
         <div class="brand-logo">
-          <Logo />
+          <AppLogo />
         </div>
         Estante Viva
       </RouterLink>

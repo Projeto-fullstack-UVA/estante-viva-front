@@ -52,6 +52,7 @@ const handleReturn = async (loanId: number) => {
     await loanService.returnBook(loanId)
     await loadData()
   } catch (error) {
+    console.error('Erro ao devolver livro:', error)
     alert('Erro ao devolver livro')
   }
 }

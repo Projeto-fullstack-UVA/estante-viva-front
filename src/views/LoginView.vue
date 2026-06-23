@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/services/auth'
 import { statsService } from '@/services'
 import { validateEmail } from '@/utils'
-import Logo from '@/components/common/Logo.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
 
 const router = useRouter()
 const { login } = useAuth()
@@ -74,7 +74,7 @@ const handleForgotPassword = () => { forgotSent.value = true }
     <aside class="auth-side">
       <div class="auth-side-logo">
         <div class="auth-side-logo-img">
-          <Logo />
+          <AppLogo />
         </div>
         <span class="auth-side-logo-text">Estante Viva</span>
       </div>
