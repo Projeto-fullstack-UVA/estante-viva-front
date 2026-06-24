@@ -187,16 +187,3 @@ const handleForgotPassword = () => {
     </div>
   </Teleport>
 </template>
-
-<style scoped>
-.forgot-row {
-  display: flex;
-  justify-content: flex-end;
-  margin: calc(var(--space-xs) * -1) 0 var(--space-md);
-}
-.modal-lead {
-  font-size: 0.9375rem;
-  color: var(--body);
-  margin-bottom: var(--space-md);
-}
-</style>

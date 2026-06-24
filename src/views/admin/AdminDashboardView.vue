@@ -95,37 +95,3 @@ onMounted(loadData)
     </div>
   </AdminLayout>
 </template>
-
-<style scoped>
-.stat--warning .stat__icon {
-  background: var(--warning-soft);
-  color: var(--warning-deep);
-}
-.stat--warning .stat__value {
-  color: var(--warning-deep);
-}
-
-.meter-pct {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--ink);
-}
-.meter {
-  height: 10px;
-  border-radius: var(--radius-full);
-  background: var(--canvas-soft-2);
-  overflow: hidden;
-}
-.meter__fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  background: var(--primary);
-  transition: width 0.5s ease-out;
-}
-.meter-detail {
-  margin-top: var(--space-sm);
-  font-size: 0.875rem;
-  color: var(--body);
-}
-</style>

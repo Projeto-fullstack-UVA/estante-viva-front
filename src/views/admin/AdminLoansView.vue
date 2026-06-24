@@ -221,39 +221,3 @@ onMounted(loadData)
     </Teleport>
   </AdminLayout>
 </template>
-
-<style scoped>
-.filters {
-  display: flex;
-  gap: var(--space-sm);
-  flex-wrap: wrap;
-  margin-bottom: var(--space-lg);
-}
-.filters__select {
-  height: 40px;
-  min-width: 200px;
-  padding: 0 var(--space-sm);
-  background: var(--canvas);
-  color: var(--ink);
-  border: 1px solid var(--hairline);
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-.filters__select:focus {
-  border-color: var(--hairline-strong);
-  box-shadow: 0 0 0 1px var(--hairline-strong);
-}
-
-.late-tag {
-  margin-left: var(--space-xs);
-}
-
-@media (max-width: 600px) {
-  .filters__select {
-    width: 100%;
-    min-width: 0;
-  }
-}
-</style>

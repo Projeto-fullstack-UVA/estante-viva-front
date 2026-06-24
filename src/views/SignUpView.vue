@@ -225,9 +225,3 @@ const handleSubmit = async () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-.create-cta {
-  margin-top: var(--space-xs);
-}
-</style>

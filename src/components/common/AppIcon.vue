@@ -105,10 +105,3 @@ defineProps<{ name: string; size?: number }>()
     </template>
   </svg>
 </template>
-
-<style scoped>
-.icon {
-  display: block;
-  flex-shrink: 0;
-}
-</style>

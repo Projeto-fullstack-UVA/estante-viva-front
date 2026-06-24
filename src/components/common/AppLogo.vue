@@ -13,11 +13,3 @@
     <path d="M12 13c-2 0-4 1-4 3s2 3 4 3 4-1 4-3-2-3-4-3z" />
   </svg>
 </template>
-
-<style scoped>
-.logo-svg {
-  width: 100%;
-  height: 100%;
-  color: inherit;
-}
-</style>
