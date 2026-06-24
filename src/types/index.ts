@@ -6,6 +6,10 @@ export interface User {
   role: 'student' | 'teacher' | 'donator' | 'admin'
   points: number
   campus: string
+  address?: string
+  document?: string
+  cellphone?: string
+  birthDate?: string
   created_at: string
 }
 

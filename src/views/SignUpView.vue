@@ -13,6 +13,9 @@ const name = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
 const campus = ref<(typeof campusOptions)[number] | ''>('')
+const address = ref('')
+const document = ref('')
+const cellphone = ref('')
 const birthDate = ref('')
 const role = ref<'student' | 'teacher' | 'donator'>('student')
 const errors = ref<Record<string, string>>({})
@@ -45,6 +48,19 @@ const validateForm = () => {
   if (!campus.value.trim()) {
     errors.value.campus = 'Campus é obrigatório'
   }
+  if (!address.value.trim()) {
+    errors.value.address = 'Endereço é obrigatório'
+  }
+  if (!document.value.trim()) {
+    errors.value.document = 'CPF é obrigatório'
+  } else if (!/^\d{11}$/.test(document.value)) {
+    errors.value.document = 'CPF deve conter 11 dígitos (somente números)'
+  }
+  if (!cellphone.value.trim()) {
+    errors.value.cellphone = 'Celular é obrigatório'
+  } else if (!/^\d{11}$/.test(cellphone.value)) {
+    errors.value.cellphone = 'Celular deve conter 11 dígitos (somente números, com DDD)'
+  }
   if (!birthDate.value) {
     errors.value.birthDate = 'Data de nascimento é obrigatória'
   }
@@ -71,6 +87,9 @@ const handleSubmit = async () => {
       email: email.value.trim(),
       password: password.value,
       campus: campus.value.trim(),
+      address: address.value.trim(),
+      document: document.value.trim(),
+      cellphone: cellphone.value.trim(),
       role: role.value,
       points: 0,
       birthDate: birthDate.value,
@@ -149,6 +168,25 @@ const handleSubmit = async () => {
               </option>
             </select>
             <span v-if="errors.campus" class="status-note">{{ errors.campus }}</span>
+          </div>
+
+          <div class="form-group">
+            <label for="address">Endereço</label>
+            <input id="address" v-model="address" type="text" placeholder="Rua, número, bairro" />
+            <span v-if="errors.address" class="status-note">{{ errors.address }}</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="document">CPF</label>
+              <input id="document" v-model="document" type="text" inputmode="numeric" maxlength="11" placeholder="Somente números" />
+              <span v-if="errors.document" class="status-note">{{ errors.document }}</span>
+            </div>
+            <div class="form-group">
+              <label for="cellphone">Celular</label>
+              <input id="cellphone" v-model="cellphone" type="text" inputmode="numeric" maxlength="11" placeholder="DDD + número" />
+              <span v-if="errors.cellphone" class="status-note">{{ errors.cellphone }}</span>
+            </div>
           </div>
 
           <div class="form-group">

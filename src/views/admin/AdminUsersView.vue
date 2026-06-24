@@ -19,6 +19,9 @@ const newUser = ref({
   role: 'student' as 'student' | 'teacher' | 'donator' | 'admin',
   points: 0,
   campus: '' as (typeof campusOptions)[number] | '',
+  address: '',
+  document: '',
+  cellphone: '',
   birthDate: ''
 })
 
@@ -44,12 +47,28 @@ const handleAddUser = async () => {
       role: 'student',
       points: 0,
       campus: '',
+      address: '',
+      document: '',
+      cellphone: '',
       birthDate: ''
     }
     await loadUsers()
   } catch (error) {
     console.error('Erro ao criar usuário:', error)
     alert('Erro ao criar usuário')
+  }
+}
+
+const handleDeleteUser = async (user: User) => {
+  if (!confirm(`Remover o usuário "${user.name}"? Esta ação também remove seus empréstimos e não pode ser desfeita.`)) {
+    return
+  }
+  try {
+    await userService.deleteUser(user.id)
+    await loadUsers()
+  } catch (error) {
+    console.error('Erro ao remover usuário:', error)
+    alert('Erro ao remover usuário')
   }
 }
 
@@ -118,6 +137,7 @@ onMounted(loadUsers)
             <th>Pontos</th>
             <th>Campus</th>
             <th>Cadastro</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -137,9 +157,14 @@ onMounted(loadUsers)
             <td>{{ user.points }}</td>
             <td>{{ user.campus }}</td>
             <td>{{ formatDate(user.created_at) }}</td>
+            <td>
+              <button @click="handleDeleteUser(user)" class="btn danger small">
+                Remover
+              </button>
+            </td>
           </tr>
           <tr v-if="filteredUsers.length === 0">
-            <td colspan="6" class="empty-table">Nenhum usuário encontrado.</td>
+            <td colspan="7" class="empty-table">Nenhum usuário encontrado.</td>
           </tr>
         </tbody>
       </table>
@@ -192,6 +217,20 @@ onMounted(loadUsers)
                 {{ campus }}
               </option>
             </select>
+          </div>
+          <div class="form-group">
+            <label>Endereço</label>
+            <input v-model="newUser.address" type="text" required placeholder="Rua, número, bairro" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>CPF</label>
+              <input v-model="newUser.document" type="text" required inputmode="numeric" maxlength="11" pattern="\d{11}" placeholder="Somente números" />
+            </div>
+            <div class="form-group">
+              <label>Celular</label>
+              <input v-model="newUser.cellphone" type="text" required inputmode="numeric" maxlength="11" pattern="\d{11}" placeholder="DDD + número" />
+            </div>
           </div>
           <div class="modal-actions">
             <button type="button" @click="isAddingUser = false" class="btn secondary">Cancelar</button>

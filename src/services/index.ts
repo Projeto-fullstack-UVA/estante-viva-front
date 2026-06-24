@@ -53,17 +53,27 @@ export const userService = {
     role: 'student' | 'teacher' | 'donator' | 'admin'
     points: number
     campus: string
+    address: string
+    document: string
+    cellphone: string
     birthDate: string
-  }): Promise<{ id: number; created_at: string }> {
+  }): Promise<{ id: number; created_at: string; token: string }> {
     return apiClient.post('/users', {
       name: data.name,
       email: data.email,
       password: data.password,
       role: data.role,
       campus: data.campus,
+      address: data.address,
+      document: data.document,
+      cellphone: data.cellphone,
       score: data.points,
       birthDate: toRFC3339(data.birthDate),
     })
+  },
+
+  async deleteUser(id: number): Promise<{ message: string; success: boolean }> {
+    return apiClient.delete(`/users/${id}`)
   },
 
   async changePassword(
@@ -111,6 +121,30 @@ export const bookService = {
       created_at: toRFC3339(data.created_at),
     })
   },
+
+  async updateBook(
+    id: number,
+    data: {
+      title?: string
+      author?: string
+      release_date?: string
+      edition?: string
+      status?: 'available' | 'lent'
+    },
+  ): Promise<{ message: string; success: boolean }> {
+    // PATCH /books/:id accepts partial fields; only send what was provided.
+    const payload: Record<string, unknown> = {}
+    if (data.title !== undefined) payload.title = data.title
+    if (data.author !== undefined) payload.author = data.author
+    if (data.release_date !== undefined) payload.release_date = toRFC3339(data.release_date)
+    if (data.edition !== undefined) payload.edition = data.edition
+    if (data.status !== undefined) payload.status = data.status
+    return apiClient.patch(`/books/${id}`, payload)
+  },
+
+  async deleteBook(id: number): Promise<{ message: string; success: boolean }> {
+    return apiClient.delete(`/books/${id}`)
+  },
 }
 
 export const loanService = {
@@ -129,6 +163,14 @@ export const loanService = {
 
   async returnBook(loanId: number): Promise<Loan> {
     return apiClient.patch<Loan>(`/loans/${loanId}`, {})
+  },
+
+  async getLoan(loanId: number): Promise<Loan> {
+    return apiClient.get<Loan>(`/loans/${loanId}`)
+  },
+
+  async deleteLoan(loanId: number): Promise<{ message: string; success: boolean }> {
+    return apiClient.delete(`/loans/${loanId}`)
   },
 }
 

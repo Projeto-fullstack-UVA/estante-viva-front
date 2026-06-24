@@ -19,6 +19,15 @@ const newBook = ref({
   status: 'available' as 'available' | 'lent',
 })
 
+const editingBook = ref<Book | null>(null)
+const editForm = ref({
+  title: '',
+  author: '',
+  release_date: '' as string,
+  edition: '',
+  status: 'available' as 'available' | 'lent',
+})
+
 const loadBooks = async () => {
   try {
     isLoading.value = true
@@ -66,6 +75,48 @@ const handleAddBook = async () => {
   }
 }
 
+const openEditBook = (book: Book) => {
+  editingBook.value = book
+  editForm.value = {
+    title: book.title,
+    author: book.author,
+    release_date: (book.release_date ?? '').split('T')[0] ?? '',
+    edition: book.edition ?? '',
+    status: book.status,
+  }
+}
+
+const handleEditBook = async () => {
+  if (!editingBook.value) return
+  try {
+    await bookService.updateBook(editingBook.value.id, {
+      title: editForm.value.title,
+      author: editForm.value.author,
+      release_date: editForm.value.release_date,
+      edition: editForm.value.edition || undefined,
+      status: editForm.value.status,
+    })
+    editingBook.value = null
+    await loadBooks()
+  } catch (error) {
+    console.error('Erro ao atualizar livro:', error)
+    alert('Erro ao atualizar livro')
+  }
+}
+
+const handleDeleteBook = async (book: Book) => {
+  if (!confirm(`Remover o livro "${book.title}"? Esta ação também remove seus empréstimos e não pode ser desfeita.`)) {
+    return
+  }
+  try {
+    await bookService.deleteBook(book.id)
+    await loadBooks()
+  } catch (error) {
+    console.error('Erro ao remover livro:', error)
+    alert('Erro ao remover livro')
+  }
+}
+
 onMounted(loadBooks)
 </script>
 
@@ -109,6 +160,7 @@ onMounted(loadBooks)
             <th>Edição</th>
             <th>Lançamento</th>
             <th>Status</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -127,9 +179,15 @@ onMounted(loadBooks)
                 {{ getStatusLabel(book.status) }}
               </span>
             </td>
+            <td>
+              <div class="row-actions">
+                <button @click="openEditBook(book)" class="btn secondary small">Editar</button>
+                <button @click="handleDeleteBook(book)" class="btn danger small">Remover</button>
+              </div>
+            </td>
           </tr>
           <tr v-if="filteredBooks.length === 0">
-            <td colspan="5" class="empty-table">Nenhum livro encontrado.</td>
+            <td colspan="6" class="empty-table">Nenhum livro encontrado.</td>
           </tr>
         </tbody>
       </table>
@@ -171,6 +229,47 @@ onMounted(loadBooks)
           <div class="modal-actions">
             <button type="button" @click="isAddingBook = false" class="btn secondary">Cancelar</button>
             <button type="submit" class="btn">Salvar Livro</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Editar Livro -->
+    <div v-if="editingBook" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Editar Livro</h2>
+          <button @click="editingBook = null" class="close-btn">&times;</button>
+        </div>
+        <form @submit.prevent="handleEditBook" class="modal-form">
+          <div class="form-group">
+            <label>Título</label>
+            <input v-model="editForm.title" type="text" required placeholder="Título do livro" />
+          </div>
+          <div class="form-group">
+            <label>Autor</label>
+            <input v-model="editForm.author" type="text" required placeholder="Nome do autor" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Data de Lançamento</label>
+              <input v-model="editForm.release_date" type="date" required />
+            </div>
+            <div class="form-group">
+              <label>Edição</label>
+              <input v-model="editForm.edition" type="text" placeholder="Ex: 1ª Edição" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select v-model="editForm.status" required>
+              <option value="available">Disponível</option>
+              <option value="lent">Emprestado</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" @click="editingBook = null" class="btn secondary">Cancelar</button>
+            <button type="submit" class="btn">Salvar Alterações</button>
           </div>
         </form>
       </div>
@@ -250,6 +349,11 @@ onMounted(loadBooks)
   text-align: center;
   padding: 3rem !important;
   color: var(--gray-500);
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 /* Modal Styles */
