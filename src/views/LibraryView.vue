@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
 import { bookService, loanService } from '@/services'
 import { formatDate, getStatusLabel } from '@/utils'
+import AppIcon from '@/components/common/AppIcon.vue'
 import type { Book, Loan } from '@/types'
 
 const { user } = useAuth()
@@ -76,120 +77,256 @@ onMounted(() => {
 
 <template>
   <AuthenticatedLayout>
-    <!-- Cabeçalho da página -->
-    <div class="page-hero">
+    <div class="page-head">
       <p class="eyebrow">Acervo</p>
-      <h1 class="page-title">Biblioteca</h1>
-      <p class="page-description">Explore o acervo completo, filtre por título, autor ou status e encontre seu próximo livro.</p>
+      <h1 class="page-title">Biblioteca.</h1>
+      <p class="page-description">
+        Explore o acervo completo, filtre por título, autor ou status e encontre seu próximo livro.
+      </p>
     </div>
 
-    <!-- Stats rápidas -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-card-value">{{ books.length }}</span>
-        <span class="stat-card-label">Total de livros</span>
+    <div class="stat-grid">
+      <div class="stat">
+        <span class="stat__label">Total de livros</span>
+        <span class="stat__value">{{ books.length }}</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ availableCount }}</span>
-        <span class="stat-card-label">Disponíveis</span>
+      <div class="stat">
+        <span class="stat__label">Disponíveis</span>
+        <span class="stat__value">{{ availableCount }}</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ lentCount }}</span>
-        <span class="stat-card-label">Emprestados</span>
+      <div class="stat">
+        <span class="stat__label">Emprestados</span>
+        <span class="stat__value">{{ lentCount }}</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ filteredBooks.length }}</span>
-        <span class="stat-card-label">Resultados</span>
+      <div class="stat">
+        <span class="stat__label">Resultados</span>
+        <span class="stat__value">{{ filteredBooks.length }}</span>
       </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="filters-bar">
-      <input
-        v-model="titleFilter"
-        type="text"
-        placeholder="Buscar por título..."
-      />
-      <input
-        v-model="authorFilter"
-        type="text"
-        placeholder="Buscar por autor..."
-        style="flex: 0.6; min-width: 160px;"
-      />
-      <select v-model="statusFilter" style="flex: 0; min-width: 150px;">
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search">
+        <AppIcon name="search" :size="16" />
+        <input v-model="titleFilter" type="text" placeholder="Buscar por título..." />
+      </div>
+      <input v-model="authorFilter" class="filters__author" type="text" placeholder="Buscar por autor..." />
+      <select v-model="statusFilter" class="filters__status">
         <option value="all">Todos os status</option>
         <option value="available">Disponível</option>
         <option value="lent">Emprestado</option>
       </select>
     </div>
 
-    <!-- Erro -->
-    <div v-if="error" class="callout" style="margin-bottom: 1rem;">{{ error }}</div>
+    <div v-if="error" class="callout" style="margin-bottom: var(--space-md)">{{ error }}</div>
 
-    <!-- Loading -->
-    <div v-if="isLoading" class="callout neutral">Carregando livros...</div>
+    <div v-if="isLoading" class="callout callout-neutral">Carregando livros...</div>
 
-    <!-- Sem resultados -->
-    <div v-else-if="filteredBooks.length === 0" class="empty-state">
-      <div class="empty-state-icon">🔍</div>
+    <div v-else-if="filteredBooks.length === 0" class="empty">
+      <span class="empty-icon"><AppIcon name="search" /></span>
       <p>Nenhum livro encontrado com os filtros selecionados.</p>
     </div>
 
-    <!-- Grid de livros -->
     <div v-else class="book-grid">
-      <div v-for="book in filteredBooks" :key="book.id" class="book-card">
-        <!-- Cabeçalho do card -->
-        <div class="book-card-header">
-          <div class="book-card-icon">📖</div>
-          <span
-            class="badge"
-            :class="book.status === 'available' ? 'badge-green' : 'badge-red'"
-          >
+      <article v-for="book in filteredBooks" :key="book.id" class="book-card">
+        <div class="book-card__top">
+          <span class="book-card__icon"><AppIcon name="book" :size="20" /></span>
+          <span class="badge" :class="book.status === 'available' ? 'badge-success' : 'badge-warning'">
             {{ getStatusLabel(book.status) }}
           </span>
         </div>
 
-        <!-- Conteúdo -->
-        <div>
-          <h2>{{ book.title }}</h2>
-          <p>{{ book.author }}</p>
-          <p v-if="book.edition" style="font-size: 0.8rem; color: var(--gray-400);">
-            {{ book.edition }}
-          </p>
-          <p style="font-size: 0.8rem; color: var(--gray-400); margin-top: 0.25rem;">
-            {{ formatDate(book.release_date) }}
+        <div class="book-card__body">
+          <h2 class="book-card__title">{{ book.title }}</h2>
+          <p class="book-card__author">{{ book.author }}</p>
+          <p class="book-card__meta">
+            <span v-if="book.edition">{{ book.edition }} · </span>{{ formatDate(book.release_date) }}
           </p>
         </div>
 
-        <!-- Ações -->
-        <div class="book-card-footer">
+        <div class="book-card__foot">
           <template v-if="getActiveLoanForBook(book.id)">
-            <p style="font-size: 0.8rem; color: var(--gray-500);">
+            <p class="book-card__note">
               Devolução até <strong>{{ formatDate(getActiveLoanForBook(book.id)!.return_date) }}</strong>
             </p>
-            <button type="button" class="btn secondary small" @click="handleReturn(getActiveLoanForBook(book.id)!.id)">
+            <button type="button" class="btn btn-secondary btn-sm" @click="handleReturn(getActiveLoanForBook(book.id)!.id)">
+              <AppIcon name="return" :size="15" />
               Devolver
             </button>
           </template>
           <template v-else-if="book.status === 'available'">
-            <button type="button" class="btn small" @click="handleBorrow(book.id)">
-              Pedir Emprestado
+            <button type="button" class="btn btn-primary btn-sm btn-block" @click="handleBorrow(book.id)">
+              Pedir emprestado
             </button>
           </template>
           <template v-else>
-            <p style="font-size: 0.8rem; color: var(--gray-400);">Indisponível no momento</p>
+            <p class="book-card__note">Indisponível no momento</p>
           </template>
         </div>
-      </div>
+      </article>
     </div>
   </AuthenticatedLayout>
 </template>
 
 <style scoped>
-.book-card-header {
+.filters {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
+}
+.search {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.search :deep(svg) {
+  position: absolute;
+  left: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mute);
+  pointer-events: none;
+}
+.search input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-sm) 0 36px;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search input::placeholder {
+  color: var(--mute);
+}
+.search input:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+.filters__author {
+  flex: 0.7;
+  min-width: 180px;
+  height: 40px;
+  padding: 0 var(--space-sm);
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.filters__author::placeholder {
+  color: var(--mute);
+}
+.filters__author:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+.filters__status {
+  height: 40px;
+  min-width: 170px;
+  padding: 0 var(--space-sm);
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.filters__status:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.book-grid {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.book-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  background: var(--canvas);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-2);
+  transition: box-shadow var(--transition);
+}
+.book-card:hover {
+  box-shadow: var(--elevation-3);
+}
+.book-card__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: var(--space-xs);
+}
+.book-card__icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--canvas-soft-2);
+  color: var(--ink);
+}
+.book-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.book-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.book-card__author {
+  font-size: 0.875rem;
+  color: var(--body);
+}
+.book-card__meta {
+  font-size: 0.75rem;
+  color: var(--mute);
+}
+.book-card__foot {
+  margin-top: auto;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.book-card__note {
+  font-size: 0.8125rem;
+  color: var(--mute);
+}
+.book-card__note strong {
+  font-weight: 500;
+  color: var(--body);
+}
+
+@media (max-width: 600px) {
+  .filters {
+    flex-direction: column;
+  }
+  .search,
+  .filters__author,
+  .filters__status {
+    min-width: 0;
+    width: 100%;
+    flex: none;
+  }
+  .book-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

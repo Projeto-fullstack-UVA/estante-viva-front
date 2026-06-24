@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
 import { loanService } from '@/services'
 import { formatDate, formatPoints } from '@/utils'
+import AppIcon from '@/components/common/AppIcon.vue'
 import type { Loan } from '@/types'
 
 const { user, refreshUser } = useAuth()
@@ -62,40 +63,42 @@ onMounted(() => {
 
 <template>
   <AuthenticatedLayout>
-    <!-- Hero do perfil -->
-    <div class="profile-hero">
-      <div class="profile-avatar">
-        {{ user ? getInitials(user.name) : 'U' }}
+    <!-- Profile hero (polarity-flipped dark band) -->
+    <section class="profile-hero">
+      <div class="mesh mesh--soft"></div>
+      <div class="profile-avatar">{{ user ? getInitials(user.name) : 'U' }}</div>
+      <div class="profile-hero__info">
+        <p class="profile-hero__eyebrow">Meu perfil</p>
+        <h1 class="profile-hero__name">{{ user?.name ?? 'Usuário' }}</h1>
+        <p class="profile-hero__meta">
+          {{ user?.email }} · {{ roleLabel[user?.role ?? ''] ?? user?.role }}
+          <template v-if="user?.campus"> · {{ user.campus }}</template>
+        </p>
       </div>
-      <div class="profile-hero-info">
-        <h2>{{ user?.name ?? 'Usuário' }}</h2>
-        <p>{{ user?.email }} &bull; {{ roleLabel[user?.role ?? ''] ?? user?.role }}</p>
-        <p>{{ user?.campus }}</p>
-      </div>
-    </div>
+    </section>
 
     <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-card-value">{{ formatPoints(user?.points ?? 0) }}</span>
-        <span class="stat-card-label">Pontos</span>
+    <div class="stat-grid">
+      <div class="stat">
+        <span class="stat__label">Pontos</span>
+        <span class="stat__value">{{ formatPoints(user?.points ?? 0) }}</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ activeLoans.length }}</span>
-        <span class="stat-card-label">Empréstimos ativos</span>
+      <div class="stat">
+        <span class="stat__label">Empréstimos ativos</span>
+        <span class="stat__value">{{ activeLoans.length }}</span>
       </div>
-      <div class="stat-card">
-        <span class="stat-card-value">{{ returnedLoans.length }}</span>
-        <span class="stat-card-label">Devolvidos</span>
+      <div class="stat">
+        <span class="stat__label">Devolvidos</span>
+        <span class="stat__value">{{ returnedLoans.length }}</span>
       </div>
     </div>
 
-    <!-- Info do usuário -->
-    <div class="card" style="margin-bottom: 1.25rem;">
-      <div class="card-header">
+    <!-- Account info -->
+    <div class="card">
+      <div class="card-head">
         <div>
           <div class="card-title">Informações da conta</div>
-          <div class="card-subtitle">Dados do seu perfil na plataforma</div>
+          <div class="card-sub">Dados do seu perfil na plataforma</div>
         </div>
       </div>
       <div class="info-grid">
@@ -118,47 +121,48 @@ onMounted(() => {
       </div>
     </div>
 
-    <!-- Empréstimos Ativos -->
-    <div class="card" style="margin-bottom: 1.25rem;">
-      <div class="card-header">
+    <!-- Active loans -->
+    <div class="card">
+      <div class="card-head">
         <div>
-          <div class="card-title">Empréstimos Ativos</div>
-          <div class="card-subtitle">Livros que você está com no momento</div>
+          <div class="card-title">Empréstimos ativos</div>
+          <div class="card-sub">Livros que você está com no momento</div>
         </div>
-        <span class="badge badge-green">{{ activeLoans.length }}</span>
+        <span class="badge badge-neutral">{{ activeLoans.length }}</span>
       </div>
-      <div v-if="isLoading" class="callout neutral">Carregando dados...</div>
+      <div v-if="isLoading" class="callout callout-neutral">Carregando dados...</div>
       <div v-else-if="error" class="callout">{{ error }}</div>
-      <div v-else-if="activeLoans.length === 0" class="empty-state">
-        <div class="empty-state-icon">📚</div>
+      <div v-else-if="activeLoans.length === 0" class="empty">
+        <span class="empty-icon"><AppIcon name="book" /></span>
         <p>Nenhum empréstimo ativo no momento.</p>
       </div>
-      <div v-else class="section-grid">
-        <div v-for="loan in activeLoans" :key="loan.id" class="profile-card">
-          <span class="profile-card-title">Título</span>
-          <strong>{{ loan.book_title }}</strong>
-          <p>{{ loan.book_author }}</p>
-          <p style="font-size: 0.8rem; color: var(--gray-500);">
-            Devolução até <strong style="color: var(--gray-700);">{{ formatDate(loan.return_date) }}</strong>
+      <div v-else class="loan-grid">
+        <article v-for="loan in activeLoans" :key="loan.id" class="loan-card">
+          <span class="loan-card__eyebrow">Empréstimo</span>
+          <strong class="loan-card__title">{{ loan.book_title }}</strong>
+          <p class="loan-card__author">{{ loan.book_author }}</p>
+          <p class="loan-card__due">
+            Devolução até <strong>{{ formatDate(loan.return_date) }}</strong>
           </p>
-          <button type="button" class="btn secondary small" @click="handleReturn(loan.id)">
+          <button type="button" class="btn btn-secondary btn-sm loan-card__action" @click="handleReturn(loan.id)">
+            <AppIcon name="return" :size="15" />
             Devolver
           </button>
-        </div>
+        </article>
       </div>
     </div>
 
-    <!-- Histórico -->
-    <div v-if="returnedLoans.length > 0" class="card" style="margin-bottom: 1.25rem;">
-      <div class="card-header">
+    <!-- History -->
+    <div v-if="returnedLoans.length > 0" class="card">
+      <div class="card-head">
         <div>
-          <div class="card-title">Histórico de Empréstimos</div>
-          <div class="card-subtitle">Livros já devolvidos</div>
+          <div class="card-title">Histórico de empréstimos</div>
+          <div class="card-sub">Livros já devolvidos</div>
         </div>
-        <span class="badge badge-gray">{{ returnedLoans.length }}</span>
+        <span class="badge badge-neutral">{{ returnedLoans.length }}</span>
       </div>
-      <div class="table-shell">
-        <table class="table-view">
+      <div class="table-wrap">
+        <table class="table">
           <thead>
             <tr>
               <th>Livro</th>
@@ -168,7 +172,7 @@ onMounted(() => {
           </thead>
           <tbody>
             <tr v-for="loan in returnedLoans" :key="loan.id">
-              <td>{{ loan.book_title }}</td>
+              <td class="cell-strong">{{ loan.book_title }}</td>
               <td>{{ loan.book_author }}</td>
               <td>{{ formatDate(loan.returned_at!) }}</td>
             </tr>
@@ -180,29 +184,128 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.info-grid {
+.profile-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+  border-radius: var(--radius-xl);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.profile-hero > *:not(.mesh) {
+  position: relative;
+  z-index: 1;
+}
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--on-primary);
+}
+.profile-hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 6px;
+}
+.profile-hero__name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--on-primary);
+}
+.profile-hero__meta {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
 }
 
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-lg);
+}
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 4px;
 }
-
 .info-label {
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--gray-400);
+  color: var(--mute);
+}
+.info-value {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ink);
 }
 
-.info-value {
-  font-size: 0.9rem;
+.loan-grid {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.loan-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--canvas-soft);
+  box-shadow: var(--elevation-1);
+}
+.loan-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.loan-card__title {
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--gray-800);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.loan-card__author {
+  font-size: 0.875rem;
+  color: var(--body);
+}
+.loan-card__due {
+  font-size: 0.8125rem;
+  color: var(--mute);
+}
+.loan-card__due strong {
+  font-weight: 500;
+  color: var(--body);
+}
+.loan-card__action {
+  margin-top: var(--space-sm);
+  align-self: flex-start;
+}
+
+@media (max-width: 600px) {
+  .profile-hero {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
 }
 </style>

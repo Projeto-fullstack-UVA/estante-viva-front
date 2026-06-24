@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
 import { bookService } from '@/services'
 import { formatDate, getStatusLabel } from '@/utils'
+import AppIcon from '@/components/common/AppIcon.vue'
 import type { Book } from '@/types'
 
 const books = ref<Book[]>([])
@@ -122,37 +123,35 @@ onMounted(loadBooks)
 
 <template>
   <AdminLayout>
-    <div class="page-header">
+    <div class="page-head page-head--row">
       <div>
-        <h1 class="page-title">Livros</h1>
+        <p class="eyebrow">Acervo</p>
+        <h1 class="page-title">Livros.</h1>
         <p class="page-description">Gerencie o acervo de livros da biblioteca.</p>
       </div>
-      <button @click="isAddingBook = true" class="btn">
-        <span>+</span> Novo Livro
+      <button type="button" class="btn btn-primary" @click="isAddingBook = true">
+        <AppIcon name="plus" :size="16" />
+        Novo livro
       </button>
     </div>
 
-    <!-- Filtros -->
-    <div class="filters-bar">
-      <input
-        v-model="searchFilter"
-        type="text"
-        placeholder="Buscar por título ou autor..."
-        class="search-input"
-      />
-      <select v-model="statusFilter" class="status-select">
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search">
+        <AppIcon name="search" :size="16" />
+        <input v-model="searchFilter" type="text" placeholder="Buscar por título ou autor..." />
+      </div>
+      <select v-model="statusFilter" class="filters__select">
         <option value="all">Todos os status</option>
         <option value="available">Disponível</option>
         <option value="lent">Emprestado</option>
       </select>
     </div>
 
-    <div v-if="isLoading" class="loading-state">
-      Carregando livros...
-    </div>
+    <div v-if="isLoading" class="callout callout-neutral">Carregando livros...</div>
 
-    <div v-else class="table-container">
-      <table class="admin-table">
+    <div v-else class="table-wrap">
+      <table class="table">
         <thead>
           <tr>
             <th>Título</th>
@@ -167,271 +166,215 @@ onMounted(loadBooks)
           <tr v-for="book in filteredBooks" :key="book.id">
             <td>
               <div class="book-cell">
-                <span class="book-icon">📖</span>
-                <span class="book-title">{{ book.title }}</span>
+                <span class="book-cell__icon"><AppIcon name="book" :size="16" /></span>
+                <span class="cell-strong">{{ book.title }}</span>
               </div>
             </td>
             <td>{{ book.author }}</td>
-            <td>{{ book.edition || '-' }}</td>
+            <td>{{ book.edition || '—' }}</td>
             <td>{{ formatDate(book.release_date) }}</td>
             <td>
-              <span class="badge" :class="book.status === 'available' ? 'badge-green' : 'badge-red'">
+              <span class="badge" :class="book.status === 'available' ? 'badge-success' : 'badge-warning'">
                 {{ getStatusLabel(book.status) }}
               </span>
             </td>
             <td>
               <div class="row-actions">
-                <button @click="openEditBook(book)" class="btn secondary small">Editar</button>
-                <button @click="handleDeleteBook(book)" class="btn danger small">Remover</button>
+                <button type="button" class="btn btn-secondary btn-sm" @click="openEditBook(book)">
+                  <AppIcon name="pencil" :size="15" />
+                  Editar
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" @click="handleDeleteBook(book)">
+                  <AppIcon name="trash" :size="15" />
+                  Remover
+                </button>
               </div>
             </td>
           </tr>
-          <tr v-if="filteredBooks.length === 0">
-            <td colspan="6" class="empty-table">Nenhum livro encontrado.</td>
+          <tr v-if="filteredBooks.length === 0" class="empty-row">
+            <td colspan="6">Nenhum livro encontrado.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal Adicionar Livro -->
-    <div v-if="isAddingBook" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Adicionar Novo Livro</h2>
-          <button @click="isAddingBook = false" class="close-btn">&times;</button>
+    <!-- Add-book modal -->
+    <Teleport to="body">
+      <div v-if="isAddingBook" class="modal-backdrop" @click.self="isAddingBook = false">
+        <div class="modal" role="dialog" aria-modal="true">
+          <form @submit.prevent="handleAddBook">
+            <div class="modal-head">
+              <span class="modal-title">Adicionar novo livro</span>
+              <button type="button" class="modal-close" aria-label="Fechar" @click="isAddingBook = false">
+                <AppIcon name="x" />
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="field">
+                <label for="b-title">Título</label>
+                <input id="b-title" v-model="newBook.title" type="text" required placeholder="Título do livro" />
+              </div>
+              <div class="field">
+                <label for="b-author">Autor</label>
+                <input id="b-author" v-model="newBook.author" type="text" required placeholder="Nome do autor" />
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="b-date">Data de lançamento</label>
+                  <input id="b-date" v-model="newBook.release_date" type="date" required />
+                </div>
+                <div class="field">
+                  <label for="b-edition">Edição</label>
+                  <input id="b-edition" v-model="newBook.edition" type="text" placeholder="Ex: 1ª edição" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="b-status">Status inicial</label>
+                <select id="b-status" v-model="newBook.status" required>
+                  <option value="available">Disponível</option>
+                  <option value="lent">Emprestado</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button type="button" class="btn btn-secondary" @click="isAddingBook = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar livro</button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="handleAddBook" class="modal-form">
-          <div class="form-group">
-            <label>Título</label>
-            <input v-model="newBook.title" type="text" required placeholder="Título do livro" />
-          </div>
-          <div class="form-group">
-            <label>Autor</label>
-            <input v-model="newBook.author" type="text" required placeholder="Nome do autor" />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Data de Lançamento</label>
-              <input v-model="newBook.release_date" type="date" required />
-            </div>
-            <div class="form-group">
-              <label>Edição</label>
-              <input v-model="newBook.edition" type="text" placeholder="Ex: 1ª Edição" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Status inicial</label>
-            <select v-model="newBook.status" required>
-              <option value="available">Disponível</option>
-              <option value="lent">Emprestado</option>
-            </select>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="isAddingBook = false" class="btn secondary">Cancelar</button>
-            <button type="submit" class="btn">Salvar Livro</button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Teleport>
 
-    <!-- Modal Editar Livro -->
-    <div v-if="editingBook" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Editar Livro</h2>
-          <button @click="editingBook = null" class="close-btn">&times;</button>
+    <!-- Edit-book modal -->
+    <Teleport to="body">
+      <div v-if="editingBook" class="modal-backdrop" @click.self="editingBook = null">
+        <div class="modal" role="dialog" aria-modal="true">
+          <form @submit.prevent="handleEditBook">
+            <div class="modal-head">
+              <span class="modal-title">Editar livro</span>
+              <button type="button" class="modal-close" aria-label="Fechar" @click="editingBook = null">
+                <AppIcon name="x" />
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="field">
+                <label for="e-title">Título</label>
+                <input id="e-title" v-model="editForm.title" type="text" required placeholder="Título do livro" />
+              </div>
+              <div class="field">
+                <label for="e-author">Autor</label>
+                <input id="e-author" v-model="editForm.author" type="text" required placeholder="Nome do autor" />
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label for="e-date">Data de lançamento</label>
+                  <input id="e-date" v-model="editForm.release_date" type="date" required />
+                </div>
+                <div class="field">
+                  <label for="e-edition">Edição</label>
+                  <input id="e-edition" v-model="editForm.edition" type="text" placeholder="Ex: 1ª edição" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="e-status">Status</label>
+                <select id="e-status" v-model="editForm.status" required>
+                  <option value="available">Disponível</option>
+                  <option value="lent">Emprestado</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button type="button" class="btn btn-secondary" @click="editingBook = null">Cancelar</button>
+              <button type="submit" class="btn btn-primary">Salvar alterações</button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="handleEditBook" class="modal-form">
-          <div class="form-group">
-            <label>Título</label>
-            <input v-model="editForm.title" type="text" required placeholder="Título do livro" />
-          </div>
-          <div class="form-group">
-            <label>Autor</label>
-            <input v-model="editForm.author" type="text" required placeholder="Nome do autor" />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Data de Lançamento</label>
-              <input v-model="editForm.release_date" type="date" required />
-            </div>
-            <div class="form-group">
-              <label>Edição</label>
-              <input v-model="editForm.edition" type="text" placeholder="Ex: 1ª Edição" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Status</label>
-            <select v-model="editForm.status" required>
-              <option value="available">Disponível</option>
-              <option value="lent">Emprestado</option>
-            </select>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="editingBook = null" class="btn secondary">Cancelar</button>
-            <button type="submit" class="btn">Salvar Alterações</button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Teleport>
   </AdminLayout>
 </template>
 
 <style scoped>
-.page-header {
+.filters {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
 }
-
-.filters-bar {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.search-input {
+.search {
+  position: relative;
   flex: 1;
+  min-width: 220px;
 }
-
-.status-select {
-  width: 200px;
+.search :deep(svg) {
+  position: absolute;
+  left: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mute);
+  pointer-events: none;
 }
-
-.table-container {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--gray-200);
-  overflow: hidden;
-}
-
-.admin-table {
+.search input {
   width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.admin-table th {
-  background: var(--gray-50);
-  padding: 1rem 1.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--gray-500);
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.admin-table td {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--gray-100);
+  height: 40px;
+  padding: 0 var(--space-sm) 0 36px;
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
-  color: var(--gray-700);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.search input::placeholder {
+  color: var(--mute);
+}
+.search input:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+.filters__select {
+  height: 40px;
+  min-width: 200px;
+  padding: 0 var(--space-sm);
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.filters__select:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
 }
 
 .book-cell {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-sm);
 }
-
-.book-icon {
-  font-size: 1.25rem;
-}
-
-.book-title {
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
-.empty-table {
-  text-align: center;
-  padding: 3rem !important;
-  color: var(--gray-500);
-}
-
-.row-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.book-cell__icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   display: grid;
   place-items: center;
-  z-index: 1000;
-  padding: 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--canvas-soft-2);
+  color: var(--ink);
 }
 
-.modal-content {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 500px;
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--gray-100);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h2 {
-  font-size: 1.25rem;
-  color: var(--gray-900);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--gray-400);
-  cursor: pointer;
-}
-
-.modal-form {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.25rem;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--gray-700);
-  margin-bottom: 0.5rem;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 2rem;
-}
-
-.loading-state {
-  padding: 3rem;
-  text-align: center;
-  color: var(--gray-500);
+@media (max-width: 600px) {
+  .filters {
+    flex-direction: column;
+  }
+  .search,
+  .filters__select {
+    min-width: 0;
+    width: 100%;
+    flex: none;
+  }
 }
 </style>

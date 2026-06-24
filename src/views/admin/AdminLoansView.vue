@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
 import { loanService, userService, bookService } from '@/services'
 import { formatDate } from '@/utils'
+import AppIcon from '@/components/common/AppIcon.vue'
 import type { Loan, User, Book } from '@/types'
 
 const loans = ref<Loan[]>([])
@@ -97,278 +98,162 @@ onMounted(loadData)
 
 <template>
   <AdminLayout>
-    <div class="page-header">
+    <div class="page-head page-head--row">
       <div>
-        <h1 class="page-title">Empréstimos</h1>
+        <p class="eyebrow">Movimentação</p>
+        <h1 class="page-title">Empréstimos.</h1>
         <p class="page-description">Acompanhe e gerencie todos os empréstimos realizados.</p>
       </div>
-      <button @click="isAddingLoan = true" class="btn">
-        <span>+</span> Novo Empréstimo
+      <button type="button" class="btn btn-primary" @click="isAddingLoan = true">
+        <AppIcon name="plus" :size="16" />
+        Novo empréstimo
       </button>
     </div>
 
-    <!-- Filtros -->
-    <div class="filters-bar">
-      <select v-model="statusFilter" class="status-select">
-        <option value="active">Apenas Ativos</option>
-        <option value="returned">Apenas Devolvidos</option>
-        <option value="all">Todos os Registros</option>
+    <!-- Filters -->
+    <div class="filters">
+      <select v-model="statusFilter" class="filters__select">
+        <option value="active">Apenas ativos</option>
+        <option value="returned">Apenas devolvidos</option>
+        <option value="all">Todos os registros</option>
       </select>
     </div>
 
-    <div v-if="isLoading" class="loading-state">
-      Carregando empréstimos...
-    </div>
+    <div v-if="isLoading" class="callout callout-neutral">Carregando empréstimos...</div>
 
-    <div v-else class="table-container">
-      <table class="admin-table">
+    <div v-else class="table-wrap">
+      <table class="table">
         <thead>
           <tr>
             <th>Livro</th>
             <th>Usuário</th>
-            <th>Data de Devolução</th>
+            <th>Data de devolução</th>
             <th>Status</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="loan in filteredLoans" :key="loan.id">
-            <td>
-              <div class="book-info">
-                <span class="book-title">{{ getBookTitle(loan.book_id) }}</span>
-              </div>
-            </td>
+            <td class="cell-strong">{{ getBookTitle(loan.book_id) }}</td>
             <td>{{ getUserName(loan.user_id) }}</td>
             <td>
-              <div :class="{ 'text-red': !loan.returned_at && isLate(loan.return_date) }">
+              <span :class="{ 'text-error': !loan.returned_at && isLate(loan.return_date) }">
                 {{ formatDate(loan.return_date) }}
-                <span v-if="!loan.returned_at && isLate(loan.return_date)" class="late-tag">Atrasado</span>
-              </div>
+              </span>
+              <span v-if="!loan.returned_at && isLate(loan.return_date)" class="badge badge-error late-tag">
+                Atrasado
+              </span>
             </td>
             <td>
-              <span v-if="loan.returned_at" class="badge badge-gray">
+              <span v-if="loan.returned_at" class="badge badge-neutral">
                 Devolvido em {{ formatDate(loan.returned_at) }}
               </span>
-              <span v-else class="badge badge-green">
-                Em posse
-              </span>
+              <span v-else class="badge badge-success">Em posse</span>
             </td>
             <td>
               <div class="row-actions">
                 <button
                   v-if="!loan.returned_at"
+                  type="button"
+                  class="btn btn-secondary btn-sm"
                   @click="handleReturn(loan.id!)"
-                  class="btn secondary small"
                 >
-                  Registrar Devolução
+                  <AppIcon name="check" :size="15" />
+                  Registrar devolução
                 </button>
-                <button @click="handleDeleteLoan(loan)" class="btn danger small">
+                <button type="button" class="btn btn-danger btn-sm" @click="handleDeleteLoan(loan)">
+                  <AppIcon name="trash" :size="15" />
                   Remover
                 </button>
               </div>
             </td>
           </tr>
-          <tr v-if="filteredLoans.length === 0">
-            <td colspan="5" class="empty-table">Nenhum empréstimo encontrado.</td>
+          <tr v-if="filteredLoans.length === 0" class="empty-row">
+            <td colspan="5">Nenhum empréstimo encontrado.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Modal Novo Empréstimo -->
-    <div v-if="isAddingLoan" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Registrar Empréstimo</h2>
-          <button @click="isAddingLoan = false" class="close-btn">&times;</button>
+    <!-- New-loan modal -->
+    <Teleport to="body">
+      <div v-if="isAddingLoan" class="modal-backdrop" @click.self="isAddingLoan = false">
+        <div class="modal" role="dialog" aria-modal="true">
+          <form @submit.prevent="handleAddLoan">
+            <div class="modal-head">
+              <span class="modal-title">Registrar empréstimo</span>
+              <button type="button" class="modal-close" aria-label="Fechar" @click="isAddingLoan = false">
+                <AppIcon name="x" />
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="field">
+                <label for="l-user">Usuário</label>
+                <select id="l-user" v-model.number="newLoan.user_id" required>
+                  <option :value="null" disabled>Selecione um usuário</option>
+                  <option v-for="u in users" :key="u.id" :value="u.id">
+                    {{ u.name }} ({{ u.email }})
+                  </option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="l-book">Livro disponível</label>
+                <select id="l-book" v-model.number="newLoan.book_id" required>
+                  <option :value="null" disabled>Selecione um livro</option>
+                  <option v-for="b in availableBooks" :key="b.id" :value="b.id">
+                    {{ b.title }} — {{ b.author }}
+                  </option>
+                </select>
+                <span v-if="availableBooks.length === 0" class="field-error">
+                  Nenhum livro disponível para empréstimo no momento.
+                </span>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button type="button" class="btn btn-secondary" @click="isAddingLoan = false">Cancelar</button>
+              <button type="submit" class="btn btn-primary" :disabled="!newLoan.user_id || !newLoan.book_id">
+                Registrar empréstimo
+              </button>
+            </div>
+          </form>
         </div>
-        <form @submit.prevent="handleAddLoan" class="modal-form">
-          <div class="form-group">
-            <label>Usuário</label>
-            <select v-model.number="newLoan.user_id" required>
-              <option :value="null" disabled>Selecione um usuário</option>
-              <option v-for="u in users" :key="u.id" :value="u.id">
-                {{ u.name }} ({{ u.email }})
-              </option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Livro disponível</label>
-            <select v-model.number="newLoan.book_id" required>
-              <option :value="null" disabled>Selecione um livro</option>
-              <option v-for="b in availableBooks" :key="b.id" :value="b.id">
-                {{ b.title }} — {{ b.author }}
-              </option>
-            </select>
-            <p v-if="availableBooks.length === 0" class="status-note">
-              Nenhum livro disponível para empréstimo no momento.
-            </p>
-          </div>
-          <div class="modal-actions">
-            <button type="button" @click="isAddingLoan = false" class="btn secondary">Cancelar</button>
-            <button type="submit" class="btn" :disabled="!newLoan.user_id || !newLoan.book_id">
-              Registrar Empréstimo
-            </button>
-          </div>
-        </form>
       </div>
-    </div>
+    </Teleport>
   </AdminLayout>
 </template>
 
 <style scoped>
-.page-header {
+.filters {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 2rem;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-lg);
 }
-
-.row-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.filters-bar {
-  margin-bottom: 1.5rem;
-}
-
-.status-select {
-  width: 200px;
-}
-
-.table-container {
-  background: var(--white);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--gray-200);
-  overflow: hidden;
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.admin-table th {
-  background: var(--gray-50);
-  padding: 1rem 1.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--gray-500);
-  border-bottom: 1px solid var(--gray-200);
-}
-
-.admin-table td {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--gray-100);
+.filters__select {
+  height: 40px;
+  min-width: 200px;
+  padding: 0 var(--space-sm);
+  background: var(--canvas);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
-  color: var(--gray-700);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
-
-.book-title {
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
-.badge-gray {
-  background: var(--gray-100);
-  color: var(--gray-600);
-}
-
-.text-red {
-  color: #ef4444;
-  font-weight: 600;
+.filters__select:focus {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
 }
 
 .late-tag {
-  font-size: 0.7rem;
-  background: #fef2f2;
-  color: #ef4444;
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  margin-left: 0.5rem;
-  text-transform: uppercase;
+  margin-left: var(--space-xs);
 }
 
-.empty-table {
-  text-align: center;
-  padding: 3rem !important;
-  color: var(--gray-500);
-}
-
-.loading-state {
-  padding: 3rem;
-  text-align: center;
-  color: var(--gray-500);
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: grid;
-  place-items: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 500px;
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--gray-100);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h2 {
-  font-size: 1.25rem;
-  color: var(--gray-900);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--gray-400);
-  cursor: pointer;
-}
-
-.modal-form {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.25rem;
-}
-
-.form-group label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--gray-700);
-  margin-bottom: 0.5rem;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  margin-top: 2rem;
+@media (max-width: 600px) {
+  .filters__select {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>
