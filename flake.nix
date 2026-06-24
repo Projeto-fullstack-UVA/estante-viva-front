@@ -1,7 +1,7 @@
 {
   description = "Vuejs and Typescript development environment";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.0";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
   };
   outputs = { self, nixpkgs }:
     let
