@@ -4,6 +4,7 @@ import { useAuth } from '@/services/auth'
 import { formatPoints } from '@/utils'
 import AppLogo from '@/components/common/AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -50,6 +51,7 @@ const isActive = (path: string): boolean => {
           {{ formatPoints(user?.points ?? 0) }} pts
         </span>
         <span class="who">{{ user?.name ?? 'Usuário' }}</span>
+        <ThemeToggle />
         <button type="button" class="btn btn-secondary btn-sm" @click="handleLogout">
           <AppIcon name="log-out" :size="15" />
           Sair

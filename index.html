@@ -7,6 +7,20 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="description" content="Estante Viva — sua biblioteca na palma da mão. Acervo, empréstimos e doações em um só lugar.">
     <title>Estante Viva</title>
+    <script>
+      // Apply the saved/system theme before first paint to avoid a flash of the
+      // wrong colour scheme. Kept in sync afterwards by src/services/theme.ts.
+      (function () {
+        try {
+          var stored = localStorage.getItem('estante-viva-theme')
+          var dark =
+            stored === 'dark' ||
+            (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (e) {}
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link

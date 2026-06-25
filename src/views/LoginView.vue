@@ -5,6 +5,7 @@ import { useAuth } from '@/services/auth'
 import { validateEmail } from '@/utils'
 import AppLogo from '@/components/common/AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const router = useRouter()
 const { login } = useAuth()
@@ -61,6 +62,7 @@ const handleForgotPassword = () => {
 </script>
 
 <template>
+  <ThemeToggle class="theme-toggle--floating" />
   <div class="auth">
     <!-- Brand panel (polarity-flipped dark band + mesh gradient) -->
     <aside class="auth-brand">

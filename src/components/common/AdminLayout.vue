@@ -3,6 +3,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import { useAuth } from '@/services/auth'
 import AppLogo from '@/components/common/AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const { user, logout } = useAuth()
 const router = useRouter()
@@ -61,10 +62,13 @@ const handleLogout = () => {
     <main class="admin-main">
       <header class="admin-top">
         <span class="admin-top__label">Painel administrativo</span>
-        <RouterLink to="/library" class="btn btn-secondary btn-sm">
-          <AppIcon name="store" :size="15" />
-          Ir para biblioteca
-        </RouterLink>
+        <div class="cluster">
+          <ThemeToggle />
+          <RouterLink to="/library" class="btn btn-secondary btn-sm">
+            <AppIcon name="store" :size="15" />
+            Ir para biblioteca
+          </RouterLink>
+        </div>
       </header>
 
       <div class="admin-content">

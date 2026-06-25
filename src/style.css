@@ -90,6 +90,57 @@
   --g-ship-end: #f9cb28;
 }
 
+/* ---------- Dark mode ----------
+   Dark is a token-only flip: every utility resolves its colour through the
+   theme variables above, so re-pointing those variables under `:root.dark`
+   (`.dark` is set on <html> by services/theme.ts) re-skins the whole app.
+   The ink primary polarity-flips to a near-white fill (Vercel/Geist dark),
+   while the decorative dark bands keep a dark surface — see overrides below.
+   `:root.dark` outranks `:root`/@theme regardless of source order. */
+:root.dark {
+  --color-scheme: dark;
+
+  /* Ink primary flips to a light fill (CTAs, avatars, meters, indicators) */
+  --color-primary: #ededed;
+  --color-primary-hover: #ffffff;
+  --color-on-primary: #0a0a0a;
+
+  /* Text */
+  --color-ink: #ededed;
+  --color-body: #a1a1a1;
+  --color-mute: #707070;
+
+  /* Surfaces — pure-black page, near-black cards, lifted insets */
+  --color-canvas: #0f0f0f;
+  --color-canvas-soft: #000000;
+  --color-canvas-soft-2: #1c1c1c;
+  --color-hairline: #2a2a2a;
+  --color-hairline-strong: #4d4d4d;
+
+  /* Semantic — retuned for contrast on dark surfaces */
+  --color-link: #4aa8ff;
+  --color-link-deep: #7cc0ff;
+  --color-link-bg-soft: #102a43;
+  --color-success: #4aa8ff;
+  --color-error: #ff5a5f;
+  --color-error-soft: #3a1517;
+  --color-error-deep: #ff8c8f;
+  --color-warning: #f5a623;
+  --color-warning-soft: #38290e;
+  --color-warning-deep: #f7c66b;
+  --color-violet: #9a5cf0;
+  --color-cyan: #50e3c2;
+  --color-highlight-pink: #ff3d9a;
+
+  /* Elevation — light hairline ring + real dark drops (black drops vanish) */
+  --shadow-elevation-1: 0 0 0 1px #ffffff14;
+  --shadow-elevation-2: 0 0 0 1px #ffffff14, 0 1px 2px #0000005c, 0 2px 4px #00000040;
+  --shadow-elevation-3: 0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 16px -8px #00000066;
+  --shadow-elevation-4: 0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 24px -4px #00000073;
+  --shadow-elevation-5: 0 0 0 1px #ffffff24, 0 1px 2px #00000066, 0 8px 16px -4px #00000080,
+    0 24px 40px -8px #0000008c;
+}
+
 /* ---------- Reset & Base ---------- */
 @layer base {
   *,
@@ -118,6 +169,9 @@
   ::selection {
     @apply bg-primary;
     color: #f2f2f2;
+  }
+  :root.dark ::selection {
+    color: #0a0a0a;
   }
 
   a {
@@ -1073,6 +1127,62 @@
   }
   .text-error {
     @apply text-error-deep;
+  }
+
+  /* ---------- Theme toggle ---------- */
+  .theme-toggle {
+    @apply grid size-8 shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline bg-canvas text-body;
+    transition: background var(--transition), color var(--transition),
+      border-color var(--transition);
+  }
+  .theme-toggle:hover {
+    @apply border-hairline-strong bg-canvas-soft-2 text-ink;
+  }
+  .theme-toggle--floating {
+    @apply fixed shadow-elevation-2;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    z-index: 150;
+  }
+
+  /* ---------- Dark mode: keep the polarity-flipped bands dark ----------
+     In dark mode `--color-primary` flips to a light fill, which is right for
+     CTAs but would invert these decorative bands. Pin them back to a dark
+     surface with light text; their secondary copy already uses white alphas. */
+  :root.dark .auth-brand,
+  :root.dark .profile-hero {
+    background-color: #0a0a0a;
+  }
+  :root.dark .auth-brand,
+  :root.dark .auth-brand .auth-logo,
+  :root.dark .auth-brand .auth-logo__mark,
+  :root.dark .auth-headline,
+  :root.dark .auth-stat__value,
+  :root.dark .profile-hero,
+  :root.dark .profile-hero__name,
+  :root.dark .profile-avatar {
+    color: #fafafa;
+  }
+
+  /* Re-apply elevation in dark mode. Tailwind inlines the light-mode shadow
+     colours into each utility's --tw-shadow, so re-pointing the theme var
+     alone can't reach them; set box-shadow directly from the dark tokens. */
+  :root.dark .card,
+  :root.dark .stat,
+  :root.dark .table-wrap,
+  :root.dark .book-card,
+  :root.dark .theme-toggle--floating {
+    box-shadow: var(--shadow-elevation-2);
+  }
+  :root.dark .card-soft,
+  :root.dark .loan-card {
+    box-shadow: var(--shadow-elevation-1);
+  }
+  :root.dark .book-card:hover {
+    box-shadow: var(--shadow-elevation-3);
+  }
+  :root.dark .modal {
+    box-shadow: var(--shadow-elevation-5);
   }
 }
 

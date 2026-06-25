@@ -5,6 +5,7 @@ import { userService } from '@/services'
 import { validateEmail } from '@/utils'
 import AppLogo from '@/components/common/AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const router = useRouter()
 const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
@@ -93,6 +94,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
+  <ThemeToggle class="theme-toggle--floating" />
   <div class="auth">
     <aside class="auth-brand">
       <div class="mesh mesh--vivid"></div>
