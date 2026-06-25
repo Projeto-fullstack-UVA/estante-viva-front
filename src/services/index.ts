@@ -25,6 +25,7 @@ const normalizeEvent = (raw: Record<string, unknown>): Event => ({
   name: String(raw?.name ?? ''),
   description: String(raw?.description ?? ''),
   location: String(raw?.location ?? ''),
+  date: (raw?.date as string | null) ?? null,
   institution_id: Number(raw?.intitution_id ?? raw?.institution_id ?? 0),
   created_at: (raw?.created_at as string | null) ?? null,
 })
@@ -180,10 +181,12 @@ export const eventService = {
     name: string
     description: string
     location: string
+    date: string
     institution_id: number
   }): Promise<{ message: string; success: boolean }> {
-    // POST /events expects the correctly-spelled `institution_id`.
-    return apiClient.post('/events', data)
+    // POST /events expects the correctly-spelled `institution_id` and an
+    // RFC3339 `date` (the API binds dates as time.Time).
+    return apiClient.post('/events', { ...data, date: toRFC3339(data.date) })
   },
 
   async deleteEvent(id: number): Promise<{ message: string; success: boolean }> {

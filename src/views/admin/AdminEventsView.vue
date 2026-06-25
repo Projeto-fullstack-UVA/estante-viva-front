@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
 import { eventService, institutionService } from '@/services'
+import { formatDate } from '@/utils'
 import AppIcon from '@/components/common/AppIcon.vue'
 import type { Event, Institution } from '@/types'
 
@@ -15,6 +16,7 @@ const newEvent = ref({
   name: '',
   description: '',
   location: '',
+  date: '',
   institution_id: '' as number | '',
 })
 
@@ -53,7 +55,7 @@ const filteredEvents = computed(() => {
 })
 
 const resetForm = () => {
-  newEvent.value = { name: '', description: '', location: '', institution_id: '' }
+  newEvent.value = { name: '', description: '', location: '', date: '', institution_id: '' }
 }
 
 const handleAddEvent = async () => {
@@ -63,6 +65,7 @@ const handleAddEvent = async () => {
       name: newEvent.value.name,
       description: newEvent.value.description,
       location: newEvent.value.location,
+      date: newEvent.value.date,
       institution_id: newEvent.value.institution_id,
     })
     isAddingEvent.value = false
@@ -120,6 +123,7 @@ onMounted(loadData)
           <tr>
             <th>Nome</th>
             <th>Local</th>
+            <th>Data</th>
             <th>Instituição</th>
             <th>Ações</th>
           </tr>
@@ -133,6 +137,7 @@ onMounted(loadData)
               </div>
             </td>
             <td>{{ event.location || '—' }}</td>
+            <td>{{ event.date ? formatDate(event.date) : '—' }}</td>
             <td>{{ institutionName(event.institution_id) }}</td>
             <td>
               <div class="row-actions">
@@ -144,7 +149,7 @@ onMounted(loadData)
             </td>
           </tr>
           <tr v-if="filteredEvents.length === 0" class="empty-row">
-            <td colspan="4">Nenhum evento encontrado.</td>
+            <td colspan="5">Nenhum evento encontrado.</td>
           </tr>
         </tbody>
       </table>
@@ -173,6 +178,10 @@ onMounted(loadData)
               <div class="field">
                 <label for="ev-location">Local</label>
                 <input id="ev-location" v-model="newEvent.location" type="text" placeholder="Onde acontecerá" />
+              </div>
+              <div class="field">
+                <label for="ev-date">Data</label>
+                <input id="ev-date" v-model="newEvent.date" type="date" required />
               </div>
               <div class="field">
                 <label for="ev-institution">Instituição</label>

@@ -862,8 +862,8 @@
     letter-spacing: 0.04em;
   }
   .admin-content {
-    @apply mx-auto w-full p-xl;
-    max-width: 1200px;
+    @apply mx-auto w-full min-w-0 p-xl;
+    max-width: 1600px;
   }
 
   /* ---------- Icons ---------- */

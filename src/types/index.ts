@@ -46,6 +46,7 @@ export interface Event {
   name: string
   description: string
   location: string
+  date: string | null
   institution_id: number // normalized from the API's misspelled `intitution_id`
   created_at: string | null
 }

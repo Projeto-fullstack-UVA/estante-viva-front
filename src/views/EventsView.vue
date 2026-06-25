@@ -105,8 +105,8 @@ onMounted(() => {
         <div class="book-card__foot">
           <p class="book-card__note">
             <span v-if="event.location">{{ event.location }}</span>
-            <span v-if="event.location && event.created_at"> · </span>
-            <span v-if="event.created_at">{{ formatDate(event.created_at) }}</span>
+            <span v-if="event.location && event.date"> · </span>
+            <span v-if="event.date">{{ formatDate(event.date) }}</span>
           </p>
         </div>
       </article>
