@@ -51,10 +51,18 @@ const getActiveLoanForBook = (bookId: number): Loan | undefined => {
   return activeLoans.value.find((l) => l.book_id === bookId && !l.returned_at)
 }
 
+// Default loan period: 14 days from today (matches the API's previous default).
+const LOAN_PERIOD_DAYS = 14
+const defaultReturnDate = (): string => {
+  const d = new Date()
+  d.setDate(d.getDate() + LOAN_PERIOD_DAYS)
+  return d.toISOString()
+}
+
 const handleBorrow = async (bookId: number) => {
   if (!user.value) return
   try {
-    await loanService.borrowBook(user.value.id, bookId)
+    await loanService.borrowBook(bookId, defaultReturnDate())
     await loadData()
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Erro ao pegar livro emprestado'

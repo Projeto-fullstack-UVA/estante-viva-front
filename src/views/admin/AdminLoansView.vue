@@ -12,11 +12,6 @@ const books = ref<Book[]>([])
 const isLoading = ref(true)
 const statusFilter = ref('active')
 
-const isAddingLoan = ref(false)
-const newLoan = ref({ user_id: null as number | null, book_id: null as number | null })
-
-const availableBooks = computed(() => books.value.filter((b) => b.status === 'available'))
-
 const loadData = async () => {
   try {
     isLoading.value = true
@@ -63,19 +58,6 @@ const handleReturn = async (loanId: number) => {
   }
 }
 
-const handleAddLoan = async () => {
-  if (!newLoan.value.user_id || !newLoan.value.book_id) return
-  try {
-    await loanService.borrowBook(newLoan.value.user_id, newLoan.value.book_id)
-    isAddingLoan.value = false
-    newLoan.value = { user_id: null, book_id: null }
-    await loadData()
-  } catch (error) {
-    console.error('Erro ao registrar empréstimo:', error)
-    alert('Erro ao registrar empréstimo')
-  }
-}
-
 const handleDeleteLoan = async (loan: Loan) => {
   if (!confirm('Remover este registro de empréstimo? Esta ação não pode ser desfeita.')) {
     return
@@ -104,10 +86,6 @@ onMounted(loadData)
         <h1 class="page-title">Empréstimos.</h1>
         <p class="page-description">Acompanhe e gerencie todos os empréstimos realizados.</p>
       </div>
-      <button type="button" class="btn btn-primary" @click="isAddingLoan = true">
-        <AppIcon name="plus" :size="16" />
-        Novo empréstimo
-      </button>
     </div>
 
     <!-- Filters -->
@@ -174,50 +152,5 @@ onMounted(loadData)
         </tbody>
       </table>
     </div>
-
-    <!-- New-loan modal -->
-    <Teleport to="body">
-      <div v-if="isAddingLoan" class="modal-backdrop" @click.self="isAddingLoan = false">
-        <div class="modal" role="dialog" aria-modal="true">
-          <form @submit.prevent="handleAddLoan">
-            <div class="modal-head">
-              <span class="modal-title">Registrar empréstimo</span>
-              <button type="button" class="modal-close" aria-label="Fechar" @click="isAddingLoan = false">
-                <AppIcon name="x" />
-              </button>
-            </div>
-            <div class="modal-body">
-              <div class="field">
-                <label for="l-user">Usuário</label>
-                <select id="l-user" v-model.number="newLoan.user_id" required>
-                  <option :value="null" disabled>Selecione um usuário</option>
-                  <option v-for="u in users" :key="u.id" :value="u.id">
-                    {{ u.name }} ({{ u.email }})
-                  </option>
-                </select>
-              </div>
-              <div class="field">
-                <label for="l-book">Livro disponível</label>
-                <select id="l-book" v-model.number="newLoan.book_id" required>
-                  <option :value="null" disabled>Selecione um livro</option>
-                  <option v-for="b in availableBooks" :key="b.id" :value="b.id">
-                    {{ b.title }} — {{ b.author }}
-                  </option>
-                </select>
-                <span v-if="availableBooks.length === 0" class="field-error">
-                  Nenhum livro disponível para empréstimo no momento.
-                </span>
-              </div>
-            </div>
-            <div class="modal-foot">
-              <button type="button" class="btn btn-secondary" @click="isAddingLoan = false">Cancelar</button>
-              <button type="submit" class="btn btn-primary" :disabled="!newLoan.user_id || !newLoan.book_id">
-                Registrar empréstimo
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
   </AdminLayout>
 </template>

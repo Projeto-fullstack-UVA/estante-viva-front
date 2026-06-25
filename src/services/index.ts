@@ -103,15 +103,15 @@ export const bookService = {
     release_date: string
     edition?: string
     status: 'available' | 'lent'
-    created_at: string
   }): Promise<{ message: string; success: boolean }> {
+    // The API sets created_at server-side (time.Now()); it's no longer part
+    // of the request contract.
     return apiClient.post('/books', {
       title: data.title,
       author: data.author,
       release_date: toRFC3339(data.release_date),
       edition: data.edition,
       status: data.status,
-      created_at: toRFC3339(data.created_at),
     })
   },
 
@@ -150,8 +150,13 @@ export const loanService = {
     return loans.filter((l) => l.user_id === userId)
   },
 
-  async borrowBook(userId: number, bookId: number): Promise<Loan> {
-    return apiClient.post<Loan>('/loans', { user_id: userId, book_id: bookId })
+  // POST /loans derives the borrower from the JWT; the body carries only the
+  // book and the (required) return date, bound server-side as RFC3339.
+  async borrowBook(bookId: number, returnDate: string): Promise<Loan> {
+    return apiClient.post<Loan>('/loans', {
+      book_id: bookId,
+      return_date: toRFC3339(returnDate),
+    })
   },
 
   async returnBook(loanId: number): Promise<Loan> {

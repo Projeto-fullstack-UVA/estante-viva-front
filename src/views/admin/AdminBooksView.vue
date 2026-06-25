@@ -58,7 +58,6 @@ const handleAddBook = async () => {
       release_date: newBook.value.release_date,
       edition: newBook.value.edition || undefined,
       status: newBook.value.status,
-      created_at: new Date().toISOString(),
     })
 
     isAddingBook.value = false
