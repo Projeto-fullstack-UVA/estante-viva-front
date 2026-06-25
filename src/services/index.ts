@@ -85,6 +85,21 @@ export const institutionService = {
   async getInstitution(id: number): Promise<Institution> {
     return apiClient.get<Institution>(`/institutions/${id}`)
   },
+
+  // POST /institutions requires the admin role; all four fields are required
+  // server-side (binding:"required").
+  async createInstitution(data: {
+    name: string
+    abbreviation: string
+    city: string
+    address: string
+  }): Promise<{ message: string; success: boolean }> {
+    return apiClient.post('/institutions', data)
+  },
+
+  async deleteInstitution(id: number): Promise<{ message: string; success: boolean }> {
+    return apiClient.delete(`/institutions/${id}`)
+  },
 }
 
 export const bookService = {

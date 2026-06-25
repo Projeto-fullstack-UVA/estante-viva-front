@@ -71,6 +71,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
+      path: '/admin/institutions',
+      name: 'admin-institutions',
+      component: () => import('@/views/admin/AdminInstitutionsView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
       path: '/',
       redirect: '/dashboard',
     },
