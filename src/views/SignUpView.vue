@@ -1,28 +1,37 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { userService } from '@/services'
+import { userService, institutionService } from '@/services'
 import { validateEmail } from '@/utils'
+import type { Institution } from '@/types'
 import AppLogo from '@/components/common/AppLogo.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const router = useRouter()
-const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
+const institutions = ref<Institution[]>([])
 
 const email = ref('')
 const name = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
-const campus = ref<(typeof campusOptions)[number] | ''>('')
+const institutionId = ref<number | ''>('')
 const address = ref('')
 const document = ref('')
 const cellphone = ref('')
 const birthDate = ref('')
-const role = ref<'student' | 'teacher' | 'donator'>('student')
+const role = ref<'student' | 'teacher'>('student')
 const errors = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    institutions.value = await institutionService.getAllInstitutions()
+  } catch (err) {
+    console.error('Falha ao carregar instituições:', err)
+  }
+})
 
 const validateForm = () => {
   errors.value = {}
@@ -34,9 +43,6 @@ const validateForm = () => {
   }
   if (!name.value.trim()) {
     errors.value.name = 'O nome é obrigatório'
-  }
-  if (!campus.value.trim()) {
-    errors.value.campus = 'Campus é obrigatório'
   }
   if (!address.value.trim()) {
     errors.value.address = 'Endereço é obrigatório'
@@ -76,7 +82,7 @@ const handleSubmit = async () => {
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value,
-      campus: campus.value.trim(),
+      institution_id: institutionId.value === '' ? null : institutionId.value,
       address: address.value.trim(),
       document: document.value.trim(),
       cellphone: cellphone.value.trim(),
@@ -158,14 +164,13 @@ const handleSubmit = async () => {
           </div>
 
           <div class="field">
-            <label for="campus">Campus</label>
-            <select id="campus" v-model="campus">
-              <option value="" disabled>Selecione um campus</option>
-              <option v-for="option in campusOptions" :key="option" :value="option">
-                {{ option }}
+            <label for="institution">Instituição</label>
+            <select id="institution" v-model="institutionId">
+              <option value="">Selecione uma instituição (opcional)</option>
+              <option v-for="institution in institutions" :key="institution.id" :value="institution.id">
+                {{ institution.name }}
               </option>
             </select>
-            <span v-if="errors.campus" class="field-error">{{ errors.campus }}</span>
           </div>
 
           <div class="field">
@@ -198,7 +203,6 @@ const handleSubmit = async () => {
             <select id="role" v-model="role">
               <option value="student">Aluno</option>
               <option value="teacher">Professor</option>
-              <option value="donator">Doador</option>
             </select>
           </div>
 

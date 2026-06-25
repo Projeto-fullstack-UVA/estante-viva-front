@@ -2,6 +2,7 @@ import type {
   User,
   Book,
   Loan,
+  Institution,
   Reservation,
   Donation,
   DonationRequest,
@@ -50,9 +51,9 @@ export const userService = {
     name: string
     email: string
     password: string
-    role: 'student' | 'teacher' | 'donator' | 'admin'
+    role: 'student' | 'teacher' | 'admin'
     points: number
-    campus: string
+    institution_id: number | null
     address: string
     document: string
     cellphone: string
@@ -63,7 +64,7 @@ export const userService = {
       email: data.email,
       password: data.password,
       role: data.role,
-      campus: data.campus,
+      institution_id: data.institution_id,
       address: data.address,
       document: data.document,
       cellphone: data.cellphone,
@@ -90,6 +91,16 @@ export const userService = {
     new_password: string,
   ): Promise<{ message: string; success: boolean }> {
     return apiClient.patch(`/admin/users/${userId}/password`, { admin_id: adminId, new_password })
+  },
+}
+
+export const institutionService = {
+  async getAllInstitutions(): Promise<Institution[]> {
+    return apiClient.get<Institution[]>('/institutions')
+  },
+
+  async getInstitution(id: number): Promise<Institution> {
+    return apiClient.get<Institution>(`/institutions/${id}`)
   },
 }
 

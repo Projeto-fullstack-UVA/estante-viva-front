@@ -1,35 +1,45 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '@/components/common/AdminLayout.vue'
-import { userService } from '@/services'
+import { userService, institutionService } from '@/services'
 import { formatDate } from '@/utils'
 import AppIcon from '@/components/common/AppIcon.vue'
-import type { User } from '@/types'
+import type { User, Institution } from '@/types'
 
 const users = ref<User[]>([])
+const institutions = ref<Institution[]>([])
 const isLoading = ref(true)
 const searchFilter = ref('')
 const roleFilter = ref('all')
 const isAddingUser = ref(false)
-const campusOptions = ['Veiga Barra', 'Veiga Tijuca', 'Veiga Botafogo', 'Veiga Cabo Frio'] as const
 
 const newUser = ref({
   name: '',
   email: '',
   password: '',
-  role: 'student' as 'student' | 'teacher' | 'donator' | 'admin',
+  role: 'student' as 'student' | 'teacher' | 'admin',
   points: 0,
-  campus: '' as (typeof campusOptions)[number] | '',
+  institution_id: '' as number | '',
   address: '',
   document: '',
   cellphone: '',
   birthDate: ''
 })
 
+const institutionName = (id: number | null) => {
+  if (id == null) return '—'
+  return institutions.value.find((i) => i.id === id)?.name ?? '—'
+}
+
 const loadUsers = async () => {
   try {
     isLoading.value = true
-    users.value = await userService.getAllUsers()
+    const [userList, institutionList] = await Promise.all([
+      userService.getAllUsers(),
+      institutionService.getAllInstitutions(),
+    ])
+    users.value = userList
+    institutions.value = institutionList
   } catch (error) {
     console.error('Erro ao carregar usuários:', error)
   } finally {
@@ -39,7 +49,10 @@ const loadUsers = async () => {
 
 const handleAddUser = async () => {
   try {
-    await userService.createUser({ ...newUser.value })
+    await userService.createUser({
+      ...newUser.value,
+      institution_id: newUser.value.institution_id === '' ? null : newUser.value.institution_id,
+    })
     isAddingUser.value = false
     newUser.value = {
       name: '',
@@ -47,7 +60,7 @@ const handleAddUser = async () => {
       password: '',
       role: 'student',
       points: 0,
-      campus: '',
+      institution_id: '',
       address: '',
       document: '',
       cellphone: '',
@@ -86,8 +99,7 @@ const getRoleLabel = (role: string) => {
   const labels: Record<string, string> = {
     'admin': 'Administrador',
     'student': 'Estudante',
-    'teacher': 'Professor',
-    'donator': 'Doador'
+    'teacher': 'Professor'
   }
   return labels[role] || role
 }
@@ -120,7 +132,6 @@ onMounted(loadUsers)
         <option value="admin">Administrador</option>
         <option value="student">Estudante</option>
         <option value="teacher">Professor</option>
-        <option value="donator">Doador</option>
       </select>
     </div>
 
@@ -134,7 +145,7 @@ onMounted(loadUsers)
             <th>Email</th>
             <th>Cargo</th>
             <th>Pontos</th>
-            <th>Campus</th>
+            <th>Instituição</th>
             <th>Cadastro</th>
             <th>Ações</th>
           </tr>
@@ -154,7 +165,7 @@ onMounted(loadUsers)
               </span>
             </td>
             <td>{{ user.points }}</td>
-            <td>{{ user.campus }}</td>
+            <td>{{ institutionName(user.institution_id) }}</td>
             <td>{{ formatDate(user.created_at) }}</td>
             <td>
               <button type="button" class="btn btn-danger btn-sm" @click="handleDeleteUser(user)">
@@ -204,7 +215,6 @@ onMounted(loadUsers)
                   <select id="u-role" v-model="newUser.role" required>
                     <option value="student">Estudante</option>
                     <option value="teacher">Professor</option>
-                    <option value="donator">Doador</option>
                     <option value="admin">Administrador</option>
                   </select>
                 </div>
@@ -214,11 +224,11 @@ onMounted(loadUsers)
                 </div>
               </div>
               <div class="field">
-                <label for="u-campus">Campus</label>
-                <select id="u-campus" v-model="newUser.campus" required>
-                  <option value="" disabled>Selecione um campus</option>
-                  <option v-for="campus in campusOptions" :key="campus" :value="campus">
-                    {{ campus }}
+                <label for="u-institution">Instituição</label>
+                <select id="u-institution" v-model="newUser.institution_id">
+                  <option value="">Sem instituição</option>
+                  <option v-for="institution in institutions" :key="institution.id" :value="institution.id">
+                    {{ institution.name }}
                   </option>
                 </select>
               </div>

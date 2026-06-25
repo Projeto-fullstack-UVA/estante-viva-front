@@ -60,7 +60,7 @@ export const useAuth = () => {
         email: payload.email,
         role,
         points: 0,
-        campus: '',
+        institution_id: null,
         created_at: '',
       }
 
@@ -95,10 +95,10 @@ export const useAuth = () => {
     const storedUser = localStorage.getItem('user')
     if (storedUser) {
       try {
-        const parsed = JSON.parse(storedUser) as User & { institution?: string }
+        const parsed = JSON.parse(storedUser) as User
         user.value = {
           ...parsed,
-          campus: parsed.campus ?? parsed.institution ?? '',
+          institution_id: parsed.institution_id ?? null,
         }
       } catch {
         logout()

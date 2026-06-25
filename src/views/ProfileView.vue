@@ -2,10 +2,10 @@
 import { ref, onMounted } from 'vue'
 import AuthenticatedLayout from '@/components/common/AuthenticatedLayout.vue'
 import { useAuth } from '@/services/auth'
-import { loanService } from '@/services'
+import { loanService, institutionService } from '@/services'
 import { formatDate, formatPoints } from '@/utils'
 import AppIcon from '@/components/common/AppIcon.vue'
-import type { Loan } from '@/types'
+import type { Loan, Institution } from '@/types'
 
 const { user, refreshUser } = useAuth()
 const isLoading = ref(true)
@@ -13,6 +13,12 @@ const error = ref<string | null>(null)
 const loans = ref<Loan[]>([])
 const activeLoans = ref<Loan[]>([])
 const returnedLoans = ref<Loan[]>([])
+const institutions = ref<Institution[]>([])
+
+const institutionName = (id: number | null | undefined) => {
+  if (id == null) return ''
+  return institutions.value.find((i) => i.id === id)?.name ?? ''
+}
 
 const loadUserData = async () => {
   if (!user.value) return
@@ -20,6 +26,7 @@ const loadUserData = async () => {
     isLoading.value = true
     error.value = null
     await refreshUser()
+    institutions.value = await institutionService.getAllInstitutions()
     const userLoans = await loanService.getUserLoans(user.value.id)
     loans.value = userLoans
     activeLoans.value = userLoans.filter((l) => !l.returned_at)
@@ -52,7 +59,6 @@ const getInitials = (name: string) => {
 const roleLabel: Record<string, string> = {
   student: 'Aluno',
   teacher: 'Professor',
-  donator: 'Doador',
   admin: 'Administrador',
 }
 
@@ -72,7 +78,7 @@ onMounted(() => {
         <h1 class="profile-hero__name">{{ user?.name ?? 'Usuário' }}</h1>
         <p class="profile-hero__meta">
           {{ user?.email }} · {{ roleLabel[user?.role ?? ''] ?? user?.role }}
-          <template v-if="user?.campus"> · {{ user.campus }}</template>
+          <template v-if="institutionName(user?.institution_id)"> · {{ institutionName(user?.institution_id) }}</template>
         </p>
       </div>
     </section>
@@ -103,8 +109,8 @@ onMounted(() => {
       </div>
       <div class="info-grid">
         <div class="info-item">
-          <span class="info-label">Campus</span>
-          <span class="info-value">{{ user?.campus || '—' }}</span>
+          <span class="info-label">Instituição</span>
+          <span class="info-value">{{ institutionName(user?.institution_id) || '—' }}</span>
         </div>
         <div class="info-item">
           <span class="info-label">Perfil</span>

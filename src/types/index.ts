@@ -3,13 +3,22 @@ export interface User {
   name: string
   email: string
   password?: string
-  role: 'student' | 'teacher' | 'donator' | 'admin'
+  role: 'student' | 'teacher' | 'admin'
   points: number
-  campus: string
+  institution_id: number | null
   address?: string
   document?: string
   cellphone?: string
   birthDate?: string
+  created_at: string
+}
+
+export interface Institution {
+  id: number
+  name: string
+  abbreviation: string
+  city: string
+  address: string
   created_at: string
 }
 
