@@ -35,6 +35,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/events',
+      name: 'events',
+      component: () => import('@/views/EventsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/admin/AdminDashboardView.vue'),
@@ -56,6 +62,12 @@ const router = createRouter({
       path: '/admin/loans',
       name: 'admin-loans',
       component: () => import('@/views/admin/AdminLoansView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    {
+      path: '/admin/events',
+      name: 'admin-events',
+      component: () => import('@/views/admin/AdminEventsView.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {

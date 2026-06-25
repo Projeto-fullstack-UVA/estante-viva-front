@@ -42,6 +42,10 @@ const handleLogout = () => {
           <AppIcon name="repeat" :size="18" />
           <span>Empréstimos</span>
         </RouterLink>
+        <RouterLink to="/admin/events" class="side__link" active-class="side__link--active">
+          <AppIcon name="calendar" :size="18" />
+          <span>Eventos</span>
+        </RouterLink>
       </nav>
 
       <div class="side__foot">

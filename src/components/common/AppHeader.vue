@@ -35,6 +35,9 @@ const isActive = (path: string): boolean => {
         <RouterLink to="/library" class="navlink" :class="{ 'navlink--active': isActive('/library') }">
           Biblioteca
         </RouterLink>
+        <RouterLink to="/events" class="navlink" :class="{ 'navlink--active': isActive('/events') }">
+          Eventos
+        </RouterLink>
         <RouterLink
           v-if="user?.role === 'admin'"
           to="/admin"

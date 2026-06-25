@@ -51,9 +51,9 @@ export const useAuth = () => {
       const claims = decodeJwt(token)
       const role = (claims?.role ?? 'student') as User['role']
 
-      // The API only returns { id, token } on login and exposes full user
-      // details on an admin-only endpoint, so we build a baseline profile from
-      // the JWT claims and enrich it from /users/:id when the role allows it.
+      // The API only returns { id, token } on login, so we build a baseline
+      // profile from the JWT claims and enrich it from /me, which returns the
+      // authenticated caller's full record regardless of role.
       let resolved: User = {
         id,
         name: payload.email.split('@')[0] ?? payload.email,
@@ -64,12 +64,10 @@ export const useAuth = () => {
         created_at: '',
       }
 
-      if (role === 'admin') {
-        try {
-          resolved = await userService.getUser(id)
-        } catch (err) {
-          console.error('Failed to load admin profile:', err)
-        }
+      try {
+        resolved = await userService.getMe()
+      } catch (err) {
+        console.error('Failed to load profile:', err)
       }
 
       user.value = resolved
@@ -107,10 +105,10 @@ export const useAuth = () => {
   }
 
   const refreshUser = async () => {
-    // Full user details are only readable on the admin-only /users/:id route.
-    if (!user.value || user.value.role !== 'admin') return
+    // /me returns the authenticated caller's full record for any role.
+    if (!user.value) return
     try {
-      const refreshedUser = await userService.getUser(user.value.id)
+      const refreshedUser = await userService.getMe()
       user.value = refreshedUser
       localStorage.setItem('user', JSON.stringify(refreshedUser))
     } catch (err) {
