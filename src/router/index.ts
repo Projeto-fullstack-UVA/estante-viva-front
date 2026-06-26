@@ -1,92 +1,92 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { setupRouteGuards } from './guards'
+import { createRouter, createWebHistory } from "vue-router";
+import { setupRouteGuards } from "./guards";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/LoginView.vue'),
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/LoginView.vue"),
       meta: { requiresAuth: false },
     },
     {
-      path: '/signup',
-      name: 'signup',
-      component: () => import('@/views/SignUpView.vue'),
+      path: "/signup",
+      name: "signup",
+      component: () => import("@/views/SignUpView.vue"),
       meta: { requiresAuth: false },
     },
     {
-      path: '/dashboard',
-      name: 'dashboard',
-      component: () => import('@/views/ProfileView.vue'),
+      path: "/dashboard",
+      name: "dashboard",
+      component: () => import("@/views/ProfileView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/profile',
-      name: 'profile',
-      component: () => import('@/views/ProfileView.vue'),
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/ProfileView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/library',
-      name: 'library',
-      component: () => import('@/views/LibraryView.vue'),
+      path: "/library",
+      name: "library",
+      component: () => import("@/views/LibraryView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/events',
-      name: 'events',
-      component: () => import('@/views/EventsView.vue'),
+      path: "/events",
+      name: "events",
+      component: () => import("@/views/EventsView.vue"),
       meta: { requiresAuth: true },
     },
     {
-      path: '/admin',
-      name: 'admin',
-      component: () => import('@/views/admin/AdminDashboardView.vue'),
+      path: "/admin",
+      name: "admin",
+      component: () => import("@/views/admin/AdminDashboardView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/admin/users',
-      name: 'admin-users',
-      component: () => import('@/views/admin/AdminUsersView.vue'),
+      path: "/admin/users",
+      name: "admin-users",
+      component: () => import("@/views/admin/AdminUsersView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/admin/books',
-      name: 'admin-books',
-      component: () => import('@/views/admin/AdminBooksView.vue'),
+      path: "/admin/books",
+      name: "admin-books",
+      component: () => import("@/views/admin/AdminBooksView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/admin/loans',
-      name: 'admin-loans',
-      component: () => import('@/views/admin/AdminLoansView.vue'),
+      path: "/admin/loans",
+      name: "admin-loans",
+      component: () => import("@/views/admin/AdminLoansView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/admin/events',
-      name: 'admin-events',
-      component: () => import('@/views/admin/AdminEventsView.vue'),
+      path: "/admin/events",
+      name: "admin-events",
+      component: () => import("@/views/admin/AdminEventsView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/admin/institutions',
-      name: 'admin-institutions',
-      component: () => import('@/views/admin/AdminInstitutionsView.vue'),
+      path: "/admin/institutions",
+      name: "admin-institutions",
+      component: () => import("@/views/admin/AdminInstitutionsView.vue"),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     {
-      path: '/',
-      redirect: '/dashboard',
+      path: "/",
+      redirect: "/dashboard",
     },
     {
-      path: '/:pathMatch(.*)*',
-      redirect: '/dashboard',
+      path: "/:pathMatch(.*)*",
+      redirect: "/dashboard",
     },
   ],
-})
+});
 
-setupRouteGuards(router)
+setupRouteGuards(router);
 
-export default router
+export default router;

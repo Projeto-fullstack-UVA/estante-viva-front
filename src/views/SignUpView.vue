@@ -1,102 +1,104 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { userService, institutionService } from '@/services'
-import { validateEmail } from '@/utils'
-import type { Institution } from '@/types'
-import AppLogo from '@/components/common/AppLogo.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import ThemeToggle from '@/components/common/ThemeToggle.vue'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { userService, institutionService } from "@/services";
+import { validateEmail } from "@/utils";
+import type { Institution } from "@/types";
+import AppLogo from "@/components/common/AppLogo.vue";
+import AppIcon from "@/components/common/AppIcon.vue";
+import ThemeToggle from "@/components/common/ThemeToggle.vue";
 
-const router = useRouter()
-const institutions = ref<Institution[]>([])
+const router = useRouter();
+const institutions = ref<Institution[]>([]);
 
-const email = ref('')
-const name = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
-const institutionId = ref<number | ''>('')
-const address = ref('')
-const document = ref('')
-const cellphone = ref('')
-const birthDate = ref('')
-const role = ref<'student' | 'teacher'>('student')
-const errors = ref<Record<string, string>>({})
-const isSubmitting = ref(false)
-const submitError = ref<string | null>(null)
+const email = ref("");
+const name = ref("");
+const password = ref("");
+const passwordConfirm = ref("");
+const institutionId = ref<number | "">("");
+const address = ref("");
+const document = ref("");
+const cellphone = ref("");
+const birthDate = ref("");
+const role = ref<"student" | "teacher">("student");
+const errors = ref<Record<string, string>>({});
+const isSubmitting = ref(false);
+const submitError = ref<string | null>(null);
 
 onMounted(async () => {
   try {
-    institutions.value = await institutionService.getAllInstitutions()
+    institutions.value = await institutionService.getAllInstitutions();
   } catch (err) {
-    console.error('Falha ao carregar instituições:', err)
+    console.error("Falha ao carregar instituições:", err);
   }
-})
+});
 
 const validateForm = () => {
-  errors.value = {}
-  submitError.value = null
+  errors.value = {};
+  submitError.value = null;
   if (!email.value.trim()) {
-    errors.value.email = 'Email é obrigatório'
+    errors.value.email = "Email é obrigatório";
   } else if (!validateEmail(email.value)) {
-    errors.value.email = 'Email inválido'
+    errors.value.email = "Email inválido";
   }
   if (!name.value.trim()) {
-    errors.value.name = 'O nome é obrigatório'
+    errors.value.name = "O nome é obrigatório";
   }
   if (!address.value.trim()) {
-    errors.value.address = 'Endereço é obrigatório'
+    errors.value.address = "Endereço é obrigatório";
   }
   if (!document.value.trim()) {
-    errors.value.document = 'CPF é obrigatório'
+    errors.value.document = "CPF é obrigatório";
   } else if (!/^\d{11}$/.test(document.value)) {
-    errors.value.document = 'CPF deve conter 11 dígitos (somente números)'
+    errors.value.document = "CPF deve conter 11 dígitos (somente números)";
   }
   if (!cellphone.value.trim()) {
-    errors.value.cellphone = 'Celular é obrigatório'
+    errors.value.cellphone = "Celular é obrigatório";
   } else if (!/^\d{11}$/.test(cellphone.value)) {
-    errors.value.cellphone = 'Celular deve conter 11 dígitos (somente números, com DDD)'
+    errors.value.cellphone =
+      "Celular deve conter 11 dígitos (somente números, com DDD)";
   }
   if (!birthDate.value) {
-    errors.value.birthDate = 'Data de nascimento é obrigatória'
+    errors.value.birthDate = "Data de nascimento é obrigatória";
   }
   if (!password.value) {
-    errors.value.password = 'Senha é obrigatória'
+    errors.value.password = "Senha é obrigatória";
   } else if (password.value.length < 6) {
-    errors.value.password = 'Senha deve ter pelo menos 6 caracteres'
+    errors.value.password = "Senha deve ter pelo menos 6 caracteres";
   }
   if (!passwordConfirm.value) {
-    errors.value.passwordConfirm = 'Confirmação de senha é obrigatória'
+    errors.value.passwordConfirm = "Confirmação de senha é obrigatória";
   } else if (password.value !== passwordConfirm.value) {
-    errors.value.passwordConfirm = 'As senhas não coincidem'
+    errors.value.passwordConfirm = "As senhas não coincidem";
   }
-  return Object.keys(errors.value).length === 0
-}
+  return Object.keys(errors.value).length === 0;
+};
 
 const handleSubmit = async () => {
-  if (!validateForm()) return
-  if (isSubmitting.value) return
+  if (!validateForm()) return;
+  if (isSubmitting.value) return;
   try {
-    isSubmitting.value = true
+    isSubmitting.value = true;
     await userService.createUser({
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value,
-      institution_id: institutionId.value === '' ? null : institutionId.value,
+      institution_id: institutionId.value === "" ? null : institutionId.value,
       address: address.value.trim(),
       document: document.value.trim(),
       cellphone: cellphone.value.trim(),
       role: role.value,
       points: 0,
       birthDate: birthDate.value,
-    })
-    router.push('/login')
+    });
+    router.push("/login");
   } catch {
-    submitError.value = 'Erro ao criar conta. Verifique se o email já está em uso.'
+    submitError.value =
+      "Erro ao criar conta. Verifique se o email já está em uso.";
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
-}
+};
 </script>
 
 <template>
@@ -114,8 +116,8 @@ const handleSubmit = async () => {
         <p class="auth-eyebrow">Comece em segundos</p>
         <h2 class="auth-headline">Junte-se à comunidade leitora.</h2>
         <p class="auth-sub">
-          Cadastre-se gratuitamente e tenha acesso ao acervo completo. Empreste, reserve e
-          acompanhe seus livros favoritos.
+          Cadastre-se gratuitamente e tenha acesso ao acervo completo. Empreste,
+          reserve e acompanhe seus livros favoritos.
         </p>
         <ul class="auth-features">
           <li class="auth-feature">
@@ -153,21 +155,40 @@ const handleSubmit = async () => {
         <form @submit.prevent="handleSubmit">
           <div class="field">
             <label for="name">Nome completo</label>
-            <input id="name" v-model="name" type="text" placeholder="Seu nome completo" />
-            <span v-if="errors.name" class="field-error">{{ errors.name }}</span>
+            <input
+              id="name"
+              v-model="name"
+              type="text"
+              placeholder="Seu nome completo"
+            />
+            <span v-if="errors.name" class="field-error">{{
+              errors.name
+            }}</span>
           </div>
 
           <div class="field">
             <label for="email">Email</label>
-            <input id="email" v-model="email" type="email" placeholder="seu@email.com" autocomplete="email" />
-            <span v-if="errors.email" class="field-error">{{ errors.email }}</span>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="seu@email.com"
+              autocomplete="email"
+            />
+            <span v-if="errors.email" class="field-error">{{
+              errors.email
+            }}</span>
           </div>
 
           <div class="field">
             <label for="institution">Instituição</label>
             <select id="institution" v-model="institutionId">
               <option value="">Selecione uma instituição (opcional)</option>
-              <option v-for="institution in institutions" :key="institution.id" :value="institution.id">
+              <option
+                v-for="institution in institutions"
+                :key="institution.id"
+                :value="institution.id"
+              >
                 {{ institution.name }}
               </option>
             </select>
@@ -175,27 +196,54 @@ const handleSubmit = async () => {
 
           <div class="field">
             <label for="address">Endereço</label>
-            <input id="address" v-model="address" type="text" placeholder="Rua, número, bairro" />
-            <span v-if="errors.address" class="field-error">{{ errors.address }}</span>
+            <input
+              id="address"
+              v-model="address"
+              type="text"
+              placeholder="Rua, número, bairro"
+            />
+            <span v-if="errors.address" class="field-error">{{
+              errors.address
+            }}</span>
           </div>
 
           <div class="field-row">
             <div class="field">
               <label for="document">CPF</label>
-              <input id="document" v-model="document" type="text" inputmode="numeric" maxlength="11" placeholder="Somente números" />
-              <span v-if="errors.document" class="field-error">{{ errors.document }}</span>
+              <input
+                id="document"
+                v-model="document"
+                type="text"
+                inputmode="numeric"
+                maxlength="11"
+                placeholder="Somente números"
+              />
+              <span v-if="errors.document" class="field-error">{{
+                errors.document
+              }}</span>
             </div>
             <div class="field">
               <label for="cellphone">Celular</label>
-              <input id="cellphone" v-model="cellphone" type="text" inputmode="numeric" maxlength="11" placeholder="DDD + número" />
-              <span v-if="errors.cellphone" class="field-error">{{ errors.cellphone }}</span>
+              <input
+                id="cellphone"
+                v-model="cellphone"
+                type="text"
+                inputmode="numeric"
+                maxlength="11"
+                placeholder="DDD + número"
+              />
+              <span v-if="errors.cellphone" class="field-error">{{
+                errors.cellphone
+              }}</span>
             </div>
           </div>
 
           <div class="field">
             <label for="birthDate">Data de nascimento</label>
             <input id="birthDate" v-model="birthDate" type="date" />
-            <span v-if="errors.birthDate" class="field-error">{{ errors.birthDate }}</span>
+            <span v-if="errors.birthDate" class="field-error">{{
+              errors.birthDate
+            }}</span>
           </div>
 
           <div class="field">
@@ -209,18 +257,38 @@ const handleSubmit = async () => {
           <div class="field-row">
             <div class="field">
               <label for="password">Senha</label>
-              <input id="password" v-model="password" type="password" placeholder="••••••••" autocomplete="new-password" />
-              <span v-if="errors.password" class="field-error">{{ errors.password }}</span>
+              <input
+                id="password"
+                v-model="password"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <span v-if="errors.password" class="field-error">{{
+                errors.password
+              }}</span>
             </div>
             <div class="field">
               <label for="passwordConfirm">Confirmar senha</label>
-              <input id="passwordConfirm" v-model="passwordConfirm" type="password" placeholder="••••••••" autocomplete="new-password" />
-              <span v-if="errors.passwordConfirm" class="field-error">{{ errors.passwordConfirm }}</span>
+              <input
+                id="passwordConfirm"
+                v-model="passwordConfirm"
+                type="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <span v-if="errors.passwordConfirm" class="field-error">{{
+                errors.passwordConfirm
+              }}</span>
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary btn-pill btn-lg btn-block create-cta" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Criando conta...' : 'Criar conta' }}
+          <button
+            type="submit"
+            class="btn btn-primary btn-pill btn-lg btn-block create-cta"
+            :disabled="isSubmitting"
+          >
+            {{ isSubmitting ? "Criando conta..." : "Criar conta" }}
           </button>
         </form>
 

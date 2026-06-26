@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useTheme } from '@/services/theme'
-import AppIcon from '@/components/common/AppIcon.vue'
+import { useTheme } from "@/services/theme";
+import AppIcon from "@/components/common/AppIcon.vue";
 
-const { theme, toggleTheme } = useTheme()
+const { theme, toggleTheme } = useTheme();
 </script>
 
 <template>

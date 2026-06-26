@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Feather-style monochrome line icons. The brand uses crisp monochrome SVGs
 // for its technical voice — never emoji — so every glyph routes through here.
-defineProps<{ name: string; size?: number }>()
+defineProps<{ name: string; size?: number }>();
 </script>
 
 <template>
@@ -34,7 +34,9 @@ defineProps<{ name: string; size?: number }>()
     </template>
     <template v-else-if="name === 'book'">
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      <path
+        d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+      />
     </template>
     <template v-else-if="name === 'repeat'">
       <path d="M17 1l4 4-4 4" />
@@ -61,7 +63,9 @@ defineProps<{ name: string; size?: number }>()
     </template>
     <template v-else-if="name === 'trash'">
       <path d="M3 6h18" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <path
+        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+      />
     </template>
     <template v-else-if="name === 'check'">
       <path d="M20 6L9 17l-5-5" />
@@ -79,15 +83,21 @@ defineProps<{ name: string; size?: number }>()
       <path d="M21 12H9" />
     </template>
     <template v-else-if="name === 'star'">
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      <path
+        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+      />
     </template>
     <template v-else-if="name === 'alert'">
-      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <path
+        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+      />
       <path d="M12 9v4M12 17h.01" />
     </template>
     <template v-else-if="name === 'inbox'">
       <path d="M22 12h-6l-2 3h-4l-2-3H2" />
-      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+      <path
+        d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+      />
     </template>
     <template v-else-if="name === 'calendar'">
       <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -96,7 +106,9 @@ defineProps<{ name: string; size?: number }>()
     <template v-else-if="name === 'building'">
       <rect x="4" y="2" width="16" height="20" rx="1" />
       <path d="M9 22v-4h6v4" />
-      <path d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+      <path
+        d="M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M16 14h.01"
+      />
     </template>
     <template v-else-if="name === 'mail'">
       <rect x="2" y="4" width="20" height="16" rx="2" />

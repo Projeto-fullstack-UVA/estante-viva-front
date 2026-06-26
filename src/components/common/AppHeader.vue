@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from 'vue-router'
-import { useAuth } from '@/services/auth'
-import { formatPoints } from '@/utils'
-import AppLogo from '@/components/common/AppLogo.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import ThemeToggle from '@/components/common/ThemeToggle.vue'
+import { useRouter, useRoute } from "vue-router";
+import { useAuth } from "@/services/auth";
+import { formatPoints } from "@/utils";
+import AppLogo from "@/components/common/AppLogo.vue";
+import AppIcon from "@/components/common/AppIcon.vue";
+import ThemeToggle from "@/components/common/ThemeToggle.vue";
 
-const router = useRouter()
-const route = useRoute()
-const { user, logout } = useAuth()
+const router = useRouter();
+const route = useRoute();
+const { user, logout } = useAuth();
 
 const handleLogout = () => {
-  logout()
-  router.push('/login')
-}
+  logout();
+  router.push("/login");
+};
 
 const isActive = (path: string): boolean => {
-  return route.path === path
-}
+  return route.path === path;
+};
 </script>
 
 <template>
@@ -29,13 +29,25 @@ const isActive = (path: string): boolean => {
       </RouterLink>
 
       <nav class="navlinks" aria-label="Navegação principal">
-        <RouterLink to="/dashboard" class="navlink" :class="{ 'navlink--active': isActive('/dashboard') }">
+        <RouterLink
+          to="/dashboard"
+          class="navlink"
+          :class="{ 'navlink--active': isActive('/dashboard') }"
+        >
           Meu perfil
         </RouterLink>
-        <RouterLink to="/library" class="navlink" :class="{ 'navlink--active': isActive('/library') }">
+        <RouterLink
+          to="/library"
+          class="navlink"
+          :class="{ 'navlink--active': isActive('/library') }"
+        >
           Biblioteca
         </RouterLink>
-        <RouterLink to="/events" class="navlink" :class="{ 'navlink--active': isActive('/events') }">
+        <RouterLink
+          to="/events"
+          class="navlink"
+          :class="{ 'navlink--active': isActive('/events') }"
+        >
           Eventos
         </RouterLink>
         <RouterLink
@@ -53,9 +65,13 @@ const isActive = (path: string): boolean => {
           <AppIcon name="star" :size="13" />
           {{ formatPoints(user?.points ?? 0) }} pts
         </span>
-        <span class="who">{{ user?.name ?? 'Usuário' }}</span>
+        <span class="who">{{ user?.name ?? "Usuário" }}</span>
         <ThemeToggle />
-        <button type="button" class="btn btn-secondary btn-sm" @click="handleLogout">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          @click="handleLogout"
+        >
           <AppIcon name="log-out" :size="15" />
           Sair
         </button>

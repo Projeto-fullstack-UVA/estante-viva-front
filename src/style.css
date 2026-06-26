@@ -7,7 +7,7 @@
    utilities with @apply. See DESIGN.md for the source of truth.
    ============================================================ */
 
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* ---------- Design Tokens (exposed as Tailwind theme) ---------- */
 @theme {
@@ -42,8 +42,10 @@
   --color-highlight-pink: #ff0080;
 
   /* Type */
-  --font-sans: 'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --font-sans:
+    "Geist", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:
+    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 
   /* Spacing — 4px base */
   --spacing-xxs: 4px;
@@ -69,10 +71,14 @@
 
   /* Elevation — stacked offsets + inset hairline ring (DESIGN.md) */
   --shadow-elevation-1: 0 0 0 1px #00000014;
-  --shadow-elevation-2: 0 0 0 1px #00000014, 0px 1px 1px #00000005, 0px 2px 2px #0000000a;
-  --shadow-elevation-3: 0 0 0 1px #00000014, 0px 2px 2px #0000000a, 0px 8px 8px -8px #0000000a;
-  --shadow-elevation-4: 0 0 0 1px #00000014, 0px 2px 2px #0000000a, 0px 8px 16px -4px #0000000a;
-  --shadow-elevation-5: 0 0 0 1px #00000014, 0px 1px 1px #00000005, 0px 8px 16px -4px #0000000a,
+  --shadow-elevation-2:
+    0 0 0 1px #00000014, 0px 1px 1px #00000005, 0px 2px 2px #0000000a;
+  --shadow-elevation-3:
+    0 0 0 1px #00000014, 0px 2px 2px #0000000a, 0px 8px 8px -8px #0000000a;
+  --shadow-elevation-4:
+    0 0 0 1px #00000014, 0px 2px 2px #0000000a, 0px 8px 16px -4px #0000000a;
+  --shadow-elevation-5:
+    0 0 0 1px #00000014, 0px 1px 1px #00000005, 0px 8px 16px -4px #0000000a,
     0px 24px 32px -8px #0000000f;
 }
 
@@ -134,10 +140,14 @@
 
   /* Elevation — light hairline ring + real dark drops (black drops vanish) */
   --shadow-elevation-1: 0 0 0 1px #ffffff14;
-  --shadow-elevation-2: 0 0 0 1px #ffffff14, 0 1px 2px #0000005c, 0 2px 4px #00000040;
-  --shadow-elevation-3: 0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 16px -8px #00000066;
-  --shadow-elevation-4: 0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 24px -4px #00000073;
-  --shadow-elevation-5: 0 0 0 1px #ffffff24, 0 1px 2px #00000066, 0 8px 16px -4px #00000080,
+  --shadow-elevation-2:
+    0 0 0 1px #ffffff14, 0 1px 2px #0000005c, 0 2px 4px #00000040;
+  --shadow-elevation-3:
+    0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 16px -8px #00000066;
+  --shadow-elevation-4:
+    0 0 0 1px #ffffff1f, 0 2px 4px #00000040, 0 8px 24px -4px #00000073;
+  --shadow-elevation-5:
+    0 0 0 1px #ffffff24, 0 1px 2px #00000066, 0 8px 16px -4px #00000080,
     0 24px 40px -8px #0000008c;
 }
 
@@ -159,7 +169,7 @@
 
   body {
     @apply bg-canvas-soft text-ink font-sans;
-    font-feature-settings: 'ss01', 'ss02', 'cv01', 'cv03';
+    font-feature-settings: "ss01", "ss02", "cv01", "cv03";
     font-size: 16px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -290,11 +300,31 @@
     z-index: 0;
     background-repeat: no-repeat;
     background-image:
-      radial-gradient(38% 46% at 22% 28%, var(--g-develop-start) 0%, transparent 60%),
-      radial-gradient(34% 42% at 48% 12%, var(--g-develop-end) 0%, transparent 58%),
-      radial-gradient(42% 52% at 72% 24%, var(--g-preview-start) 0%, transparent 60%),
-      radial-gradient(40% 48% at 86% 48%, var(--g-preview-end) 0%, transparent 58%),
-      radial-gradient(40% 50% at 28% 66%, var(--g-ship-start) 0%, transparent 58%),
+      radial-gradient(
+        38% 46% at 22% 28%,
+        var(--g-develop-start) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        34% 42% at 48% 12%,
+        var(--g-develop-end) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        42% 52% at 72% 24%,
+        var(--g-preview-start) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        40% 48% at 86% 48%,
+        var(--g-preview-end) 0%,
+        transparent 58%
+      ),
+      radial-gradient(
+        40% 50% at 28% 66%,
+        var(--g-ship-start) 0%,
+        transparent 58%
+      ),
       radial-gradient(46% 54% at 62% 74%, var(--g-ship-end) 0%, transparent 58%);
     filter: blur(56px) saturate(135%);
     opacity: 0.55;
@@ -312,8 +342,12 @@
     @apply inline-flex h-10 cursor-pointer items-center justify-center gap-xs whitespace-nowrap
       rounded-sm border border-transparent px-md font-sans text-sm font-medium
       leading-none no-underline;
-    transition: background var(--transition), border-color var(--transition),
-      color var(--transition), box-shadow var(--transition), opacity var(--transition);
+    transition:
+      background var(--transition),
+      border-color var(--transition),
+      color var(--transition),
+      box-shadow var(--transition),
+      opacity var(--transition);
   }
   .btn:disabled,
   .btn[disabled] {
@@ -387,7 +421,9 @@
   .input {
     @apply h-10 w-full rounded-sm border border-hairline bg-canvas px-sm text-ink outline-none;
     font-size: 0.875rem;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
   }
   .field textarea,
   textarea.input {
@@ -592,7 +628,9 @@
   }
   .modal-close {
     @apply grid size-8 cursor-pointer place-items-center rounded-sm border border-hairline bg-canvas text-body;
-    transition: background var(--transition), color var(--transition);
+    transition:
+      background var(--transition),
+      color var(--transition);
   }
   .modal-close:hover {
     @apply bg-canvas-soft-2 text-ink;
@@ -765,7 +803,9 @@
     padding: 6px var(--spacing-sm);
     font-size: 0.875rem;
     letter-spacing: -0.01em;
-    transition: background var(--transition), color var(--transition);
+    transition:
+      background var(--transition),
+      color var(--transition);
   }
   .navlink:hover {
     @apply bg-canvas-soft-2 text-ink;
@@ -815,7 +855,10 @@
     padding: 9px var(--spacing-sm);
     font-size: 0.875rem;
     box-shadow: inset 2px 0 0 transparent;
-    transition: background var(--transition), color var(--transition), box-shadow var(--transition);
+    transition:
+      background var(--transition),
+      color var(--transition),
+      box-shadow var(--transition);
   }
   .side__link:hover {
     @apply bg-canvas-soft text-ink;
@@ -893,7 +936,9 @@
     @apply h-10 w-full rounded-sm border border-hairline bg-canvas text-ink outline-none;
     padding: 0 var(--spacing-sm) 0 36px;
     font-size: 0.875rem;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
   }
   .search input::placeholder {
     @apply text-mute;
@@ -907,7 +952,9 @@
   .filters__select {
     @apply h-10 rounded-sm border border-hairline bg-canvas px-sm text-ink outline-none;
     font-size: 0.875rem;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
   }
   .filters__author {
     flex: 0.7;
@@ -1132,7 +1179,9 @@
   /* ---------- Theme toggle ---------- */
   .theme-toggle {
     @apply grid size-8 shrink-0 cursor-pointer place-items-center rounded-sm border border-hairline bg-canvas text-body;
-    transition: background var(--transition), color var(--transition),
+    transition:
+      background var(--transition),
+      color var(--transition),
       border-color var(--transition);
   }
   .theme-toggle:hover {

@@ -1,81 +1,85 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import AdminLayout from '@/components/common/AdminLayout.vue'
-import { loanService, userService, bookService } from '@/services'
-import { formatDate } from '@/utils'
-import AppIcon from '@/components/common/AppIcon.vue'
-import type { Loan, User, Book } from '@/types'
+import { ref, onMounted, computed } from "vue";
+import AdminLayout from "@/components/common/AdminLayout.vue";
+import { loanService, userService, bookService } from "@/services";
+import { formatDate } from "@/utils";
+import AppIcon from "@/components/common/AppIcon.vue";
+import type { Loan, User, Book } from "@/types";
 
-const loans = ref<Loan[]>([])
-const users = ref<User[]>([])
-const books = ref<Book[]>([])
-const isLoading = ref(true)
-const statusFilter = ref('active')
+const loans = ref<Loan[]>([]);
+const users = ref<User[]>([]);
+const books = ref<Book[]>([]);
+const isLoading = ref(true);
+const statusFilter = ref("active");
 
 const loadData = async () => {
   try {
-    isLoading.value = true
+    isLoading.value = true;
     const [l, u, b] = await Promise.all([
       loanService.getAllLoans(),
       userService.getAllUsers(),
-      bookService.getAllBooks()
-    ])
-    loans.value = l
-    users.value = u
-    books.value = b
+      bookService.getAllBooks(),
+    ]);
+    loans.value = l;
+    users.value = u;
+    books.value = b;
   } catch (error) {
-    console.error('Erro ao carregar empréstimos:', error)
+    console.error("Erro ao carregar empréstimos:", error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 const getUserName = (userId: number) => {
-  const user = users.value.find(u => u.id === userId)
-  return user ? user.name : `Usuário #${userId}`
-}
+  const user = users.value.find((u) => u.id === userId);
+  return user ? user.name : `Usuário #${userId}`;
+};
 
 const getBookTitle = (bookId: number) => {
-  const book = books.value.find(b => b.id === bookId)
-  return book ? book.title : `Livro #${bookId}`
-}
+  const book = books.value.find((b) => b.id === bookId);
+  return book ? book.title : `Livro #${bookId}`;
+};
 
 const filteredLoans = computed(() => {
-  return loans.value.filter(l => {
-    if (statusFilter.value === 'active') return !l.returned_at
-    if (statusFilter.value === 'returned') return !!l.returned_at
-    return true
-  })
-})
+  return loans.value.filter((l) => {
+    if (statusFilter.value === "active") return !l.returned_at;
+    if (statusFilter.value === "returned") return !!l.returned_at;
+    return true;
+  });
+});
 
 const handleReturn = async (loanId: number) => {
   try {
-    await loanService.returnBook(loanId)
-    await loadData()
+    await loanService.returnBook(loanId);
+    await loadData();
   } catch (error) {
-    console.error('Erro ao devolver livro:', error)
-    alert('Erro ao devolver livro')
+    console.error("Erro ao devolver livro:", error);
+    alert("Erro ao devolver livro");
   }
-}
+};
 
 const handleDeleteLoan = async (loan: Loan) => {
-  if (!confirm('Remover este registro de empréstimo? Esta ação não pode ser desfeita.')) {
-    return
+  if (
+    !confirm(
+      "Remover este registro de empréstimo? Esta ação não pode ser desfeita.",
+    )
+  ) {
+    return;
   }
   try {
-    await loanService.deleteLoan(loan.id)
-    await loadData()
+    await loanService.deleteLoan(loan.id);
+    await loadData();
   } catch (error) {
-    console.error('Erro ao remover empréstimo:', error)
-    alert('Erro ao remover empréstimo')
+    console.error("Erro ao remover empréstimo:", error);
+    alert("Erro ao remover empréstimo");
   }
-}
+};
 
 const isLate = (returnDate: string) => {
-  return new Date(returnDate) < new Date()
-}
+  return new Date(returnDate) < new Date();
+};
 
-onMounted(loadData)
+onMounted(loadData);
 </script>
 
 <template>
@@ -84,7 +88,9 @@ onMounted(loadData)
       <div>
         <p class="eyebrow">Movimentação</p>
         <h1 class="page-title">Empréstimos.</h1>
-        <p class="page-description">Acompanhe e gerencie todos os empréstimos realizados.</p>
+        <p class="page-description">
+          Acompanhe e gerencie todos os empréstimos realizados.
+        </p>
       </div>
     </div>
 
@@ -97,7 +103,9 @@ onMounted(loadData)
       </select>
     </div>
 
-    <div v-if="isLoading" class="callout callout-neutral">Carregando empréstimos...</div>
+    <div v-if="isLoading" class="callout callout-neutral">
+      Carregando empréstimos...
+    </div>
 
     <div v-else class="table-wrap">
       <table class="table">
@@ -115,10 +123,17 @@ onMounted(loadData)
             <td class="cell-strong">{{ getBookTitle(loan.book_id) }}</td>
             <td>{{ getUserName(loan.user_id) }}</td>
             <td>
-              <span :class="{ 'text-error': !loan.returned_at && isLate(loan.return_date) }">
+              <span
+                :class="{
+                  'text-error': !loan.returned_at && isLate(loan.return_date),
+                }"
+              >
                 {{ formatDate(loan.return_date) }}
               </span>
-              <span v-if="!loan.returned_at && isLate(loan.return_date)" class="badge badge-error late-tag">
+              <span
+                v-if="!loan.returned_at && isLate(loan.return_date)"
+                class="badge badge-error late-tag"
+              >
                 Atrasado
               </span>
             </td>
@@ -139,7 +154,11 @@ onMounted(loadData)
                   <AppIcon name="check" :size="15" />
                   Registrar devolução
                 </button>
-                <button type="button" class="btn btn-danger btn-sm" @click="handleDeleteLoan(loan)">
+                <button
+                  type="button"
+                  class="btn btn-danger btn-sm"
+                  @click="handleDeleteLoan(loan)"
+                >
                   <AppIcon name="trash" :size="15" />
                   Remover
                 </button>

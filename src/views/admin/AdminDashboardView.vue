@@ -1,44 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import AdminLayout from '@/components/common/AdminLayout.vue'
-import { userService, bookService, loanService } from '@/services'
-import AppIcon from '@/components/common/AppIcon.vue'
-import type { User, Book, Loan } from '@/types'
+import { ref, onMounted, computed } from "vue";
+import AdminLayout from "@/components/common/AdminLayout.vue";
+import { userService, bookService, loanService } from "@/services";
+import AppIcon from "@/components/common/AppIcon.vue";
+import type { User, Book, Loan } from "@/types";
 
-const users = ref<User[]>([])
-const books = ref<Book[]>([])
-const loans = ref<Loan[]>([])
-const isLoading = ref(true)
+const users = ref<User[]>([]);
+const books = ref<Book[]>([]);
+const loans = ref<Loan[]>([]);
+const isLoading = ref(true);
 
 const loadData = async () => {
   try {
-    isLoading.value = true
+    isLoading.value = true;
     const [u, b, l] = await Promise.all([
       userService.getAllUsers(),
       bookService.getAllBooks(),
-      loanService.getAllLoans()
-    ])
-    users.value = u
-    books.value = b
-    loans.value = l
+      loanService.getAllLoans(),
+    ]);
+    users.value = u;
+    books.value = b;
+    loans.value = l;
   } catch (error) {
-    console.error('Erro ao carregar dados do dashboard:', error)
+    console.error("Erro ao carregar dados do dashboard:", error);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
-const activeLoansCount = computed(() => loans.value.filter(l => !l.returned_at).length)
-const availableBooksCount = computed(() => books.value.filter(b => b.status === 'available').length)
+const activeLoansCount = computed(
+  () => loans.value.filter((l) => !l.returned_at).length,
+);
+const availableBooksCount = computed(
+  () => books.value.filter((b) => b.status === "available").length,
+);
 const availablePercent = computed(() =>
-  books.value.length === 0 ? 0 : (availableBooksCount.value / books.value.length) * 100,
-)
+  books.value.length === 0
+    ? 0
+    : (availableBooksCount.value / books.value.length) * 100,
+);
 const lateLoansCount = computed(() => {
-  const now = new Date()
-  return loans.value.filter(l => !l.returned_at && new Date(l.return_date) < now).length
-})
+  const now = new Date();
+  return loans.value.filter(
+    (l) => !l.returned_at && new Date(l.return_date) < now,
+  ).length;
+});
 
-onMounted(loadData)
+onMounted(loadData);
 </script>
 
 <template>
@@ -46,10 +54,14 @@ onMounted(loadData)
     <div class="page-head">
       <p class="eyebrow">Visão geral</p>
       <h1 class="page-title">Dashboard.</h1>
-      <p class="page-description">Acompanhe os números do sistema Estante Viva em tempo real.</p>
+      <p class="page-description">
+        Acompanhe os números do sistema Estante Viva em tempo real.
+      </p>
     </div>
 
-    <div v-if="isLoading" class="callout callout-neutral">Carregando estatísticas...</div>
+    <div v-if="isLoading" class="callout callout-neutral">
+      Carregando estatísticas...
+    </div>
 
     <div v-else>
       <!-- KPIs -->
@@ -81,15 +93,21 @@ onMounted(loadData)
         <div class="card-head">
           <div>
             <div class="card-title">Disponibilidade do acervo</div>
-            <div class="card-sub">Proporção de livros prontos para empréstimo</div>
+            <div class="card-sub">
+              Proporção de livros prontos para empréstimo
+            </div>
           </div>
           <span class="meter-pct">{{ Math.round(availablePercent) }}%</span>
         </div>
         <div class="meter">
-          <div class="meter__fill" :style="{ width: `${availablePercent}%` }"></div>
+          <div
+            class="meter__fill"
+            :style="{ width: `${availablePercent}%` }"
+          ></div>
         </div>
         <p class="meter-detail">
-          {{ availableBooksCount }} de {{ books.length }} livros estão disponíveis para empréstimo.
+          {{ availableBooksCount }} de {{ books.length }} livros estão
+          disponíveis para empréstimo.
         </p>
       </div>
     </div>
