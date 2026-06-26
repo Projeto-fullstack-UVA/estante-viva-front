@@ -96,6 +96,26 @@ export const institutionService = {
     return apiClient.post("/institutions", data);
   },
 
+  // PATCH /institutions/:id requires the admin role; it accepts partial fields,
+  // so only send what was provided.
+  async updateInstitution(
+    id: number,
+    data: {
+      name?: string;
+      abbreviation?: string;
+      city?: string;
+      address?: string;
+    },
+  ): Promise<{ message: string }> {
+    const payload: Record<string, unknown> = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.abbreviation !== undefined)
+      payload.abbreviation = data.abbreviation;
+    if (data.city !== undefined) payload.city = data.city;
+    if (data.address !== undefined) payload.address = data.address;
+    return apiClient.patch(`/institutions/${id}`, payload);
+  },
+
   async deleteInstitution(
     id: number,
   ): Promise<{ message: string }> {
@@ -215,6 +235,28 @@ export const eventService = {
     // POST /events expects the correctly-spelled `institution_id` and an
     // RFC3339 `date` (the API binds dates as time.Time).
     return apiClient.post("/events", { ...data, date: toRFC3339(data.date) });
+  },
+
+  // PATCH /events/:id accepts partial fields and is open to admin and teacher
+  // roles; only send what was provided, RFC3339-encoding the date.
+  async updateEvent(
+    id: number,
+    data: {
+      name?: string;
+      description?: string;
+      location?: string;
+      date?: string;
+      institution_id?: number;
+    },
+  ): Promise<{ message: string }> {
+    const payload: Record<string, unknown> = {};
+    if (data.name !== undefined) payload.name = data.name;
+    if (data.description !== undefined) payload.description = data.description;
+    if (data.location !== undefined) payload.location = data.location;
+    if (data.date !== undefined) payload.date = toRFC3339(data.date);
+    if (data.institution_id !== undefined)
+      payload.institution_id = data.institution_id;
+    return apiClient.patch(`/events/${id}`, payload);
   },
 
   async deleteEvent(

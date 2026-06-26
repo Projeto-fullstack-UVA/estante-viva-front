@@ -41,6 +41,24 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: "/teacher",
+      name: "teacher",
+      component: () => import("@/views/teacher/TeacherDashboardView.vue"),
+      meta: { requiresAuth: true, requiresTeacher: true },
+    },
+    {
+      path: "/teacher/books",
+      name: "teacher-books",
+      component: () => import("@/views/teacher/TeacherBooksView.vue"),
+      meta: { requiresAuth: true, requiresTeacher: true },
+    },
+    {
+      path: "/teacher/events",
+      name: "teacher-events",
+      component: () => import("@/views/teacher/TeacherEventsView.vue"),
+      meta: { requiresAuth: true, requiresTeacher: true },
+    },
+    {
       path: "/admin",
       name: "admin",
       component: () => import("@/views/admin/AdminDashboardView.vue"),

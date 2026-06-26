@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import AdminLayout from "@/components/common/AdminLayout.vue";
+import TeacherLayout from "@/components/common/TeacherLayout.vue";
 import { eventService, institutionService } from "@/services";
 import { formatDate } from "@/utils";
 import AppIcon from "@/components/common/AppIcon.vue";
@@ -143,13 +143,13 @@ onMounted(loadData);
 </script>
 
 <template>
-  <AdminLayout>
+  <TeacherLayout>
     <div class="page-head page-head--row">
       <div>
         <p class="eyebrow">Agenda</p>
         <h1 class="page-title">Eventos.</h1>
         <p class="page-description">
-          Gerencie os eventos das instituições parceiras.
+          Crie e organize os eventos das instituições parceiras.
         </p>
       </div>
       <button
@@ -415,5 +415,5 @@ onMounted(loadData);
         </div>
       </div>
     </Teleport>
-  </AdminLayout>
+  </TeacherLayout>
 </template>

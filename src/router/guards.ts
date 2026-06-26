@@ -10,12 +10,23 @@ export function setupRouteGuards(router: Router) {
     const isLoginPage = to.path === "/login";
     const requiresAuth = to.meta.requiresAuth !== false;
     const requiresAdmin = to.meta.requiresAdmin === true;
+    const requiresTeacher = to.meta.requiresTeacher === true;
 
     if (requiresAuth && !isAuthenticated.value) {
       return isLoginPage ? true : "/login";
     }
 
     if (requiresAdmin && user.value?.role !== "admin") {
+      return "/dashboard";
+    }
+
+    // Teacher routes are open to teachers and admins (admins have a superset of
+    // the teacher's capabilities).
+    if (
+      requiresTeacher &&
+      user.value?.role !== "teacher" &&
+      user.value?.role !== "admin"
+    ) {
       return "/dashboard";
     }
 

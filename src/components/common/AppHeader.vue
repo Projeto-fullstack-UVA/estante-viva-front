@@ -51,6 +51,14 @@ const isActive = (path: string): boolean => {
           Eventos
         </RouterLink>
         <RouterLink
+          v-if="user?.role === 'teacher'"
+          to="/teacher"
+          class="navlink"
+          :class="{ 'navlink--active': route.path.startsWith('/teacher') }"
+        >
+          Painel professor
+        </RouterLink>
+        <RouterLink
           v-if="user?.role === 'admin'"
           to="/admin"
           class="navlink"
